@@ -1,6 +1,8 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -19,6 +21,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  await app.listen(3000);
+  const configService: ConfigService = app.get<ConfigService>(ConfigService);
+  const port = configService.get('AUTH_API_PORT');
+  await app.listen(port);
 }
 bootstrap();
