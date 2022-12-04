@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 import configuration from './config/configuration';
 
@@ -14,7 +16,9 @@ import configuration from './config/configuration';
       isGlobal: true,
       load: [configuration],
     }),
-    DatabaseModule,
+    // DatabaseModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
