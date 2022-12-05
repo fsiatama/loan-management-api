@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(AuthGuard('azure-ad'))
   @Post('login')
   async login(@Req() req: Request) {
     return req.user;

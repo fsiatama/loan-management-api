@@ -10,6 +10,8 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Partial<CreateUserDto> | null> {
+    console.log(email);
+
     const user = await this.usersService.findOne(email);
     if (user && user.password === password) {
       const { password, ...result } = user;

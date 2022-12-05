@@ -9,4 +9,25 @@ export default registerAs('config', () => ({
     port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
     dbName: 'sicex_r',
   },
+  credentials: {
+    tenantName: process.env.TENANT_NAME,
+    clientID: process.env.CLIENT_ID,
+  },
+  policies: {
+    policyName: process.env.POLICY_NAME,
+  },
+  resource: {
+    scope: ['tasks.read'],
+  },
+  metadata: {
+    authority: 'login.microsoftonline.com',
+    discovery: '.well-known/openid-configuration',
+    version: 'v2.0',
+  },
+  settings: {
+    isB2C: true,
+    validateIssuer: true,
+    passReqToCallback: false,
+    loggingLevel: 'info',
+  },
 }));
