@@ -22,12 +22,12 @@ export class User {
   password: string;
   @Column({ type: 'varchar', length: 100, name: 'usuario_email' })
   email: string;
-  @Column({ type: 'bool', name: 'usuario_email' })
+  @Column({ type: 'bool', name: 'usuario_isroot' })
   isRoot: boolean;
-  @Column({ type: 'bool', name: 'usuario_email' })
+  @Column({ type: 'bool', name: 'usuario_activo' })
   isActive: boolean;
-  @Column({ type: 'bool', name: 'usuario_email' })
+  @Column({ type: 'bool', name: 'usuario_btn_ren' })
   canRenovate: boolean;
-  @Column({ type: 'bool', name: 'usuario_email' })
+  @Column({ type: 'bool', name: 'usuario_download' })
   canDownload: boolean;
 }
