@@ -6,13 +6,10 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<Partial<CreateUserDto> | null> {
+  async validateUser(email: string, password: string) {
     console.log(email);
 
-    const user = await this.usersService.findOne(email);
+    const user = await this.usersService.findByEmail(email);
     if (user && user.password === password) {
       const { password, ...result } = user;
       return result;

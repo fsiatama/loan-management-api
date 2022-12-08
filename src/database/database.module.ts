@@ -18,6 +18,9 @@ import configuration from '../config/configuration';
           username,
           password,
           database: dbName,
+          //logging: ['query', 'error'],
+          synchronize: false,
+          autoLoadEntities: true,
         };
       },
     }),
