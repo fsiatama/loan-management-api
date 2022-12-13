@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CountriesModule } from './countries/countries.module';
 import { ProductsModule } from './products/products.module';
+import { SuscriptionsModule } from './suscriptions/suscriptions.module';
 
 import configuration from './config/configuration';
 
@@ -23,6 +24,7 @@ import configuration from './config/configuration';
     UsersModule,
     CountriesModule,
     ProductsModule,
+    SuscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

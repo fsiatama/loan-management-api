@@ -14,7 +14,9 @@ export class UsersService {
   }
 
   findAll() {
-    return this.userRepo.find();
+    return this.userRepo.find({
+      relations: ['country'],
+    });
   }
 
   async findOne(id: number) {

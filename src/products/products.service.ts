@@ -18,7 +18,7 @@ export class ProductsService {
   findAll() {
     return this.productRepo.find({
       where: {
-        isActive: 1,
+        isActive: true,
       },
     });
   }
