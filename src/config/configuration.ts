@@ -2,6 +2,7 @@ import { registerAs } from '@nestjs/config';
 
 export default registerAs('config', () => ({
   port: parseInt(process.env.AUTH_API_PORT, 10) || 3000,
+  apiKey: 'test_api_key',
   database: {
     host: process.env.DB_SERVER,
     username: process.env.DB_USER,
