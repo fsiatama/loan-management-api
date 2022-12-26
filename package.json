@@ -21,6 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@azure/msal-node": "^1.14.5",
+    "@microsoft/microsoft-graph-client": "^3.0.4",
+    "@nestjs/axios": "^1.0.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
@@ -30,6 +33,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "isomorphic-fetch": "^3.0.0",
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
     "passport-azure-ad": "^4.3.4",
@@ -41,6 +45,7 @@
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.19",
+    "@microsoft/microsoft-graph-types": "^2.25.0",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",

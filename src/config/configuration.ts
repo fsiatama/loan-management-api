@@ -10,25 +10,38 @@ export default registerAs('config', () => ({
     port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
     dbName: 'sicex_r',
   },
-  credentials: {
-    tenantName: process.env.TENANT_NAME,
-    clientID: process.env.CLIENT_ID,
+  azureMsal: {
+    extensionsClientId: process.env.AZURE_B2C_EXTENSIONS_CLIENT_ID,
+    auth: {
+      clientId: process.env.AZURE_B2C_CLIENT_ID,
+      authority: `https://login.microsoftonline.com/${process.env.AZURE_B2C_TENANT_ID}`,
+      clientSecret: process.env.AZURE_B2C_CLIENT_SECRET,
+    },
+    tokenRequest: {
+      scopes: ['https://graph.microsoft.com/.default'],
+    },
   },
-  policies: {
-    policyName: process.env.POLICY_NAME,
-  },
-  resource: {
-    scope: ['tasks.read'],
-  },
-  metadata: {
-    authority: 'login.microsoftonline.com',
-    discovery: '.well-known/openid-configuration',
-    version: 'v2.0',
-  },
-  settings: {
-    isB2C: true,
-    validateIssuer: true,
-    passReqToCallback: false,
-    loggingLevel: 'info',
+  azureAD: {
+    credentials: {
+      tenantName: process.env.AZURE_B2C_TENANT_NAME,
+      clientID: process.env.AZURE_B2C_CLIENT_ID,
+    },
+    policies: {
+      policyName: process.env.AZURE_B2C_POLICY_NAME,
+    },
+    resource: {
+      scope: ['tasks.read'],
+    },
+    metadata: {
+      authority: 'login.microsoftonline.com',
+      discovery: '.well-known/openid-configuration',
+      version: 'v2.0',
+    },
+    settings: {
+      isB2C: true,
+      validateIssuer: true,
+      passReqToCallback: false,
+      loggingLevel: 'info',
+    },
   },
 }));

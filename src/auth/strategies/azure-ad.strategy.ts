@@ -12,15 +12,16 @@ export class AzureADStrategy extends PassportStrategy(
   constructor(
     @Inject(configuration.KEY) configService: ConfigType<typeof configuration>,
   ) {
+    const azureADConfig = configService.azureAD;
     super({
-      identityMetadata: `https://${configService.credentials.tenantName}.b2clogin.com/${configService.credentials.tenantName}.onmicrosoft.com/${configService.policies.policyName}/${configService.metadata.version}/${configService.metadata.discovery}`,
-      clientID: configService.credentials.clientID,
-      audience: configService.credentials.clientID,
-      policyName: configService.policies.policyName,
-      isB2C: configService.settings.isB2C,
-      validateIssuer: configService.settings.validateIssuer,
-      loggingLevel: configService.settings.loggingLevel,
-      passReqToCallback: configService.settings.passReqToCallback,
+      identityMetadata: `https://${azureADConfig.credentials.tenantName}.b2clogin.com/${azureADConfig.credentials.tenantName}.onmicrosoft.com/${azureADConfig.policies.policyName}/${azureADConfig.metadata.version}/${azureADConfig.metadata.discovery}`,
+      clientID: azureADConfig.credentials.clientID,
+      audience: azureADConfig.credentials.clientID,
+      policyName: azureADConfig.policies.policyName,
+      isB2C: azureADConfig.settings.isB2C,
+      validateIssuer: azureADConfig.settings.validateIssuer,
+      loggingLevel: azureADConfig.settings.loggingLevel,
+      passReqToCallback: azureADConfig.settings.passReqToCallback,
     });
   }
 
