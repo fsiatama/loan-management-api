@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 
 import { Country } from '../../countries/entities/country.entity';
+import { Company } from '../../companies/entities/company.entity';
 
 @Entity('usuario')
 export class User {
@@ -16,12 +17,16 @@ export class User {
   @Column({ type: 'int', name: 'usuario_idioma_id' })
   langId: number;
 
-  @ManyToOne(() => Country, { nullable: false })
+  @ManyToOne((): typeof Country => Country, { nullable: false })
   @JoinColumn({ name: 'usuario_pais_id' })
   country: Country;
 
-  @Column({ type: 'int', name: 'usuario_empresa_id' })
-  companyId: number;
+  @ManyToOne((): typeof Company => Company, { nullable: false })
+  @JoinColumn({ name: 'usuario_empresa_id' })
+  company: Company;
+
+  @Column({ type: 'varchar', length: 20, name: 'usuario_ciudad' })
+  city: string;
 
   @Column({ type: 'varchar', length: 20, name: 'usuario_telefono' })
   phone: string;
@@ -52,4 +57,7 @@ export class User {
 
   @Column({ type: 'bool', name: 'usuario_download' })
   canDownload: boolean;
+
+  @Column({ type: 'bool', name: 'usuario_mfa' })
+  useMfa: boolean;
 }

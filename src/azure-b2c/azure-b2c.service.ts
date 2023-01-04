@@ -1,13 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConfigType } from '@nestjs/config';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import 'isomorphic-fetch';
 
 import configuration from '../config/configuration';
-import { CreateAzureB2cDto } from './dto/create-azure-b2c.dto';
 import { UpdateAzureB2cDto } from './dto/update-azure-b2c.dto';
 import { MsGraphProvider } from './ms-graph-provider';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
+import util from './util/util';
 
 @Injectable()
 export class AzureB2cService {
@@ -17,6 +19,8 @@ export class AzureB2cService {
     @Inject('MSAL') private msalClient: ConfidentialClientApplication,
     @Inject(configuration.KEY)
     private configService: ConfigType<typeof configuration>,
+    @Inject(forwardRef((): typeof UsersService => UsersService))
+    private usersService: UsersService,
   ) {
     const clientOptions = {
       authProvider: new MsGraphProvider(configService, msalClient),
@@ -35,6 +39,9 @@ export class AzureB2cService {
       'surname',
       'mail',
       'preferredLanguage',
+      'password',
+      'id',
+      `extension_${clientId}_sicexId`,
       `extension_${clientId}_userAuthorizeRenewal`,
       `extension_${clientId}_userCanDownloadReports`,
       `extension_${clientId}_userTemplate`,
@@ -44,52 +51,44 @@ export class AzureB2cService {
     ];
   }
 
-  async create(createAzureB2cDto: CreateAzureB2cDto) {
-    const userToCreate = {
-      accountEnabled: true,
-      displayName: 'Adele B',
-      // userPrincipalName: 'AdeleV@msaljsb2c.onmicrosoft.com',
-      mailNickname: 'AdeleB',
-      extension_8d38b29e7095428ebef627e928b8f7ce_userAuthorizeRenewal: true,
-      extension_8d38b29e7095428ebef627e928b8f7ce_userCanDownloadReports: true,
-      extension_8d38b29e7095428ebef627e928b8f7ce_userTemplate: '',
-      extension_8d38b29e7095428ebef627e928b8f7ce_userIp: '',
-      extension_8d38b29e7095428ebef627e928b8f7ce_products: '',
-      extension_8d38b29e7095428ebef627e928b8f7ce_useMfa: false,
-      identities: [
-        {
-          signInType: 'userName',
-          issuer: 'sicexapplication.onmicrosoft.com',
-          issuerAssignedId: 'adeleB',
-        },
-      ],
-      passwordProfile: {
-        password: 'xWwvJ]6NMw+bWH-d',
-        forceChangePasswordNextSignIn: false,
-      },
-      passwordPolicies: 'DisablePasswordExpiration',
-    };
+  async create(user: User) {
+    const userToCreate = util.userDtoToAzureB2cDto(user);
+
+    console.log(userToCreate);
 
     try {
       console.log('Graph API called at: ' + new Date().toString());
       return await this.msGraphClient.api('/users').post(userToCreate);
     } catch (error) {
       console.log(error);
+      throw new Error('Error on create user at Azure B');
+    }
+  }
+
+  async findAll(): Promise<number | []> {
+    try {
+      console.log('Graph API called at: ' + new Date().toString());
+
+      const result = await this.msGraphClient.api('/users').count().get();
+      return Promise.resolve(result);
+    } catch (error) {
+      console.log(error);
       return error;
     }
   }
 
-  async findAll(): Promise<[]> {
+  async getUser(userPrincipalName: string): Promise<[] | boolean> {
     try {
-      console.log('Graph API called at: ' + new Date().toString());
-
-      return await this.msGraphClient
-        .api('/users')
-        .select(this.getAttributes())
-        .get();
+      console.log(
+        'Graph API called at getUser: ' +
+          userPrincipalName +
+          ' ' +
+          new Date().toString(),
+      );
+      return await this.msGraphClient.api(`/users/${userPrincipalName}`).get();
     } catch (error) {
-      console.log(error);
-      return error;
+      // console.log(error);
+      return Promise.resolve(false);
     }
   }
 
@@ -103,15 +102,85 @@ export class AzureB2cService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} azureB2c`;
-  }
-
-  update(id: number, updateAzureB2cDto: UpdateAzureB2cDto) {
-    return `This action updates a #${id} azureB2c`;
+  async update(id: number, updateAzureB2cDto: UpdateAzureB2cDto) {
+    try {
+      console.log('Graph API called at: ' + new Date().toString());
+      return await this.msGraphClient
+        .api(`/users/${id}`)
+        .patch(updateAzureB2cDto);
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} azureB2c`;
+  }
+
+  async bulkCreate(data: any[]) {
+    try {
+      console.log('Graph API called at: ' + new Date().toString());
+      Promise.all(
+        data.map(async (auth0User) => {
+          const user: User = await this.usersService.findOne(auth0User.userID);
+          if (user && user.email) {
+            const userName = user.username
+              .trim()
+              .toLowerCase()
+              .replace(/\*/g, '');
+
+            const email = user.email.trim().toLowerCase();
+
+            const exist = await this.getUser(
+              `${userName}@sicexapplication.onmicrosoft.com`,
+            );
+
+            if (exist === false) {
+              console.log(userName, user.username);
+
+              const b2cUser = {
+                city: user.city || '-',
+                country: user?.country ? user.country.name : '-',
+                accountEnabled: true,
+                displayName: `${user.name} ${user.lastName}`,
+                givenName: user.name,
+                mailNickname: userName,
+                passwordPolicies:
+                  'DisablePasswordExpiration, DisableStrongPassword',
+                passwordProfile: {
+                  password: user.password,
+                  forceChangePasswordNextSignIn: false,
+                },
+                preferredLanguage: user.langId === 1 ? 'es-ES' : 'en-US',
+                surname: user.lastName,
+                mobilePhone: user.phone || '-',
+                //mail: email,
+                extension_8d38b29e7095428ebef627e928b8f7ce_sicexId: `${user.id}`,
+                identities: [
+                  {
+                    signInType: 'userName',
+                    issuer: 'sicexapplication.onmicrosoft.com',
+                    issuerAssignedId: userName,
+                  },
+                ],
+                userPrincipalName: `${userName}@sicexapplication.onmicrosoft.com`,
+                extension_8d38b29e7095428ebef627e928b8f7ce_useMfa:
+                  user.useMfa === true ? true : false,
+              };
+
+              const result = await this.msGraphClient
+                .api('/users')
+                .post(b2cUser);
+
+              console.log(result, b2cUser);
+            }
+          }
+        }),
+      );
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 }

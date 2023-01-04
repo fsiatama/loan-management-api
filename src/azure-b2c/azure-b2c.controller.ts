@@ -1,24 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
 import { AzureB2cService } from './azure-b2c.service';
-import { CreateAzureB2cDto } from './dto/create-azure-b2c.dto';
 import { UpdateAzureB2cDto } from './dto/update-azure-b2c.dto';
+
+import * as MOCKED_RESPONSE from './data/sicex-app.json';
 
 @Controller('azure-b2c')
 export class AzureB2cController {
   constructor(private readonly azureB2cService: AzureB2cService) {}
-
-  @Post()
-  create(@Body() createAzureB2cDto: CreateAzureB2cDto) {
-    return this.azureB2cService.create(createAzureB2cDto);
-  }
 
   @Get()
   findAll() {
@@ -30,9 +18,14 @@ export class AzureB2cController {
     return this.azureB2cService.listAttributes();
   }
 
+  @Get('bulk')
+  bulkCreate() {
+    return this.azureB2cService.bulkCreate(MOCKED_RESPONSE);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.azureB2cService.findOne(+id);
+    return this.azureB2cService.getUser(id);
   }
 
   @Patch(':id')

@@ -10,6 +10,7 @@ import { CountriesModule } from './countries/countries.module';
 import { ProductsModule } from './products/products.module';
 import { SuscriptionsModule } from './suscriptions/suscriptions.module';
 import { AzureB2cModule } from './azure-b2c/azure-b2c.module';
+import { CompaniesModule } from './companies/companies.module';
 
 import configuration from './config/configuration';
 
@@ -27,6 +28,7 @@ import configuration from './config/configuration';
     ProductsModule,
     SuscriptionsModule,
     AzureB2cModule,
+    CompaniesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
