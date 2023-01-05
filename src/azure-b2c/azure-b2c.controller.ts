@@ -27,17 +27,4 @@ export class AzureB2cController {
   findOne(@Param('id') id: string) {
     return this.azureB2cService.getUser(id);
   }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateAzureB2cDto: UpdateAzureB2cDto,
-  ) {
-    return this.azureB2cService.update(+id, updateAzureB2cDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.azureB2cService.remove(+id);
-  }
 }

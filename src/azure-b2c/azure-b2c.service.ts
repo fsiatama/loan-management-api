@@ -1,11 +1,16 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConfigType } from '@nestjs/config';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import 'isomorphic-fetch';
 
 import configuration from '../config/configuration';
-import { UpdateAzureB2cDto } from './dto/update-azure-b2c.dto';
 import { MsGraphProvider } from './ms-graph-provider';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
@@ -53,11 +58,7 @@ export class AzureB2cService {
 
   async create(user: User) {
     const userToCreate = util.userDtoToAzureB2cDto(user);
-
-    console.log(userToCreate);
-
     try {
-      console.log('Graph API called at: ' + new Date().toString());
       return await this.msGraphClient.api('/users').post(userToCreate);
     } catch (error) {
       console.log(error);
@@ -79,13 +80,11 @@ export class AzureB2cService {
 
   async getUser(userPrincipalName: string): Promise<[] | boolean> {
     try {
-      console.log(
-        'Graph API called at getUser: ' +
-          userPrincipalName +
-          ' ' +
-          new Date().toString(),
-      );
-      return await this.msGraphClient.api(`/users/${userPrincipalName}`).get();
+      const attrib = this.getAttributes();
+      return await this.msGraphClient
+        .api(`/users/${userPrincipalName}`)
+        .select(attrib)
+        .get();
     } catch (error) {
       // console.log(error);
       return Promise.resolve(false);
@@ -102,12 +101,23 @@ export class AzureB2cService {
     }
   }
 
-  async update(id: number, updateAzureB2cDto: UpdateAzureB2cDto) {
+  async update(user: User) {
     try {
-      console.log('Graph API called at: ' + new Date().toString());
+      const userName = user.username.trim().toLowerCase().replace(/\*/g, '');
+      const userPrincipalName = `${userName}@sicexapplication.onmicrosoft.com`;
+
+      const exist = await this.getUser(userPrincipalName);
+      if (exist === false) {
+        throw new HttpException(
+          'User not exist in Azure B2C',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const userToUpdate = util.userDtoToAzureB2cDto(user);
+
       return await this.msGraphClient
-        .api(`/users/${id}`)
-        .patch(updateAzureB2cDto);
+        .api(`/users/${userPrincipalName}`)
+        .patch(userToUpdate);
     } catch (error) {
       console.log(error);
       return error;

@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 
 import { Country } from '../../countries/entities/country.entity';
@@ -37,6 +38,7 @@ export class User {
   @Column({ type: 'varchar', length: 60, name: 'usuario_apellidos' })
   lastName: string;
 
+  @Index({ unique: true })
   @Column({ type: 'varchar', length: 15, name: 'usuario_login' })
   username: string;
 

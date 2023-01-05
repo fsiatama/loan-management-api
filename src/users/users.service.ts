@@ -1,11 +1,12 @@
 import {
-  BadRequestException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { AzureB2cService } from '../azure-b2c/azure-b2c.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -24,42 +25,60 @@ export class UsersService {
     private dataSource: DataSource,
   ) {}
 
+  private async validateReferences(
+    data: CreateUserDto | UpdateUserDto,
+    currentUser: User,
+  ) {
+    const newUser = currentUser;
+
+    if (data.username) {
+      const id: number = currentUser.id ?? -1;
+      const existUsername = await this.findByUsername(id, data.username);
+      if (existUsername) {
+        throw new HttpException(
+          'Username alredy registered',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+    if (data.companyId) {
+      const company = await this.companyRepo.findOneBy({
+        id: data.companyId,
+      });
+      if (!company) {
+        throw new HttpException('Company not exist', HttpStatus.NOT_FOUND);
+      }
+      newUser.company = company;
+    }
+
+    if (data.countryId) {
+      const country = await this.countryRepo.findOneBy({
+        id: data.countryId,
+      });
+      if (!country) {
+        throw new HttpException('Country not exist', HttpStatus.NOT_FOUND);
+      }
+      newUser.country = country;
+    }
+    return newUser;
+  }
+
   async create(data: CreateUserDto) {
     const queryRunner = this.dataSource.createQueryRunner();
-
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const newUser = this.userRepo.create(data);
-      if (data.companyId) {
-        const company = await this.companyRepo.findOne({
-          where: { id: data.companyId },
-        });
-        if (!company) {
-          throw new BadRequestException('Company not exist');
-        }
-        newUser.company = company;
-      }
-
-      if (data.countryId) {
-        const country = await this.countryRepo.findOne({
-          where: { id: data.countryId },
-        });
-        if (!country) {
-          throw new BadRequestException('Country not exist');
-        }
-        newUser.country = country;
-      }
+      const user = this.userRepo.create(data);
+      const newUser = await this.validateReferences(data, user);
       const userCreated = await queryRunner.manager.save(newUser);
       const userAD = await this.azureB2cService.create(userCreated);
-
       await queryRunner.commitTransaction();
       return userAD;
     } catch (err) {
-      console.log('transaction failed');
+      console.log('Create User transaction failed');
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(err);
+      throw err;
     } finally {
       await queryRunner.release();
     }
@@ -72,9 +91,22 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    return this.userRepo.findOne({
+    const user = await this.userRepo.findOne({
       where: { id },
       relations: ['country', 'company'],
+    });
+
+    if (!user) {
+      throw new HttpException('User not exist', HttpStatus.NOT_FOUND);
+    }
+
+    return user;
+  }
+
+  private async findByUsername(id: number, username: string): Promise<User> {
+    return await this.userRepo.findOneBy({
+      username,
+      id: Not(id),
     });
   }
 
@@ -82,8 +114,26 @@ export class UsersService {
     return this.userRepo.findOneBy({ email });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, changes: UpdateUserDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = await this.findOne(id);
+      this.userRepo.merge(user, changes);
+      const newUser = await this.validateReferences(changes, user);
+      const userUpdated = await queryRunner.manager.save(newUser);
+      await this.azureB2cService.update(userUpdated);
+      await queryRunner.commitTransaction();
+      return userUpdated;
+    } catch (err) {
+      console.log('Update User transaction failed');
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   remove(id: number) {
