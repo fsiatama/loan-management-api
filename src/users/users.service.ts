@@ -6,13 +6,14 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Not, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, Like, Not, Repository } from 'typeorm';
 import { AzureB2cService } from '../azure-b2c/azure-b2c.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Country } from '../countries/entities/country.entity';
 import { Company } from '../companies/entities/company.entity';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -84,10 +85,39 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return this.userRepo.find({
+  async findAll(params?: FilterUsersDto) {
+    const { pageSize = 20, current = 1, name } = params;
+
+    const options: FindManyOptions<User> = {
+      take: pageSize,
+      skip: (current - 1) * pageSize,
+    };
+
+    if (name) {
+      options.where = [
+        { name: Like(`%${name}%`) },
+        { lastName: Like(`%${name}%`) },
+        { email: Like(`%${name}%`) },
+        { username: Like(`%${name}%`) },
+        {
+          company: {
+            name: Like(`%${name}%`),
+          },
+        },
+      ];
+    }
+    const [data, total] = await this.userRepo.findAndCount({
       relations: ['country', 'company'],
+      ...options,
     });
+
+    return {
+      data,
+      current,
+      pageSize,
+      success: true,
+      total,
+    };
   }
 
   async findOne(id: number) {
@@ -110,8 +140,8 @@ export class UsersService {
     });
   }
 
-  async findByEmail(email: string) {
-    return this.userRepo.findOneBy({ email });
+  async findByEmailOrUsername(email: string) {
+    return this.userRepo.findOneBy([{ email: email }, { username: email }]);
   }
 
   async update(id: number, changes: UpdateUserDto) {

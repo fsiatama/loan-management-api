@@ -1,5 +1,6 @@
 import {
   Controller,
+  Request,
   Get,
   Post,
   Body,
@@ -7,13 +8,17 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
-//@UseGuards(AuthGuard('azure-ad'))
+@UseGuards(AuthGuard('jwt'))
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -24,8 +29,14 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() params: FilterUsersDto) {
+    return this.usersService.findAll(params);
+  }
+
+  @Get('profile')
+  getProfile(@Request() req) {
+    const { sub } = req.user;
+    return this.usersService.findOne(sub);
   }
 
   @Get(':id')

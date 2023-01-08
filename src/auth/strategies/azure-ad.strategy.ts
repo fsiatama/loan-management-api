@@ -26,6 +26,8 @@ export class AzureADStrategy extends PassportStrategy(
   }
 
   async validate(data: string): Promise<any> {
+    console.log(data);
+
     if (!data) {
       throw new UnauthorizedException('Not allowed');
     }
