@@ -6,12 +6,19 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Company } from './entities/company.entity';
+import { FilterCompaniesDto } from './dto/filter-companies.dto';
 
+@UseGuards(AuthGuard('jwt'))
+@ApiTags('companies')
 @Controller('companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
@@ -22,8 +29,8 @@ export class CompaniesController {
   }
 
   @Get()
-  findAll(): Promise<Company[]> {
-    return this.companiesService.findAll();
+  findAll(@Query() params: FilterCompaniesDto) {
+    return this.companiesService.findAll(params);
   }
 
   @Get(':id')

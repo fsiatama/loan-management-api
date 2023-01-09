@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -24,7 +25,13 @@ export class Company {
   @Column({ type: 'varchar', length: 200, name: 'empresa_ip' })
   allowedIps: string;
 
+  @Column({ type: 'int', name: 'empresa_usuario_tpl_id' })
+  userTemplateId: number;
+
   @ManyToOne((): typeof User => User, { nullable: true })
   @JoinColumn({ name: 'empresa_usuario_tpl_id' })
   userTemplate: User;
+
+  @OneToMany(() => User, (user) => user.company)
+  users: User[];
 }

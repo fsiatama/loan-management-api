@@ -62,4 +62,7 @@ export class User {
 
   @Column({ type: 'bool', name: 'usuario_mfa' })
   useMfa: boolean;
+
+  @Column({ type: 'bool', name: 'usuario_is_template' })
+  isTemplate: boolean;
 }

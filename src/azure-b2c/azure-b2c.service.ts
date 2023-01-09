@@ -58,6 +58,9 @@ export class AzureB2cService {
 
   async create(user: User) {
     const userToCreate = util.userDtoToAzureB2cDto(user);
+
+    console.log(userToCreate);
+
     try {
       return await this.msGraphClient.api('/users').post(userToCreate);
     } catch (error) {

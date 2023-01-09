@@ -85,7 +85,15 @@ export class UsersService {
     }
   }
 
-  async findAll(params?: FilterUsersDto) {
+  async findAllTemplates(params?: FilterUsersDto) {
+    return await this.userRepo.find({
+      where: {
+        isTemplate: true,
+      },
+      select: ['name', 'lastName', 'id'],
+    });
+  }
+  async findAll(params?: FilterUsersDto): Promise<API.Response<User>> {
     const { pageSize = 20, current = 1, name } = params;
 
     const options: FindManyOptions<User> = {
@@ -94,9 +102,14 @@ export class UsersService {
     };
 
     if (name) {
+      let [firstName, lastName] = name.split(' ');
+      if (!lastName || !firstName) {
+        lastName = name;
+        firstName = name;
+      }
       options.where = [
-        { name: Like(`%${name}%`) },
-        { lastName: Like(`%${name}%`) },
+        { name: Like(`%${firstName}%`) },
+        { lastName: Like(`%${lastName}%`) },
         { email: Like(`%${name}%`) },
         { username: Like(`%${name}%`) },
         {

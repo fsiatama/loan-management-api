@@ -21,7 +21,10 @@ class Util {
       preferredLanguage: user.langId === 1 ? 'es-ES' : 'en-US',
       surname: user.lastName,
       mobilePhone: user.phone || '-',
-      //mail: email,
+      mail: email,
+      //CAChallengeIsMfa: true,
+      //CAChallengeIsChgPwd: false,
+      //CAChallengeIsBlock: false,
       extension_8d38b29e7095428ebef627e928b8f7ce_sicexId: `${user.id}`,
       identities: [
         {
