@@ -1,16 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsPositive,
-  IsString,
-} from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 
 export class CreateCompanyDto {
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   @ApiProperty({ description: `Company name` })
   readonly name: string;
 

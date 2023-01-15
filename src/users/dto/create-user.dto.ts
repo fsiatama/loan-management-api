@@ -5,8 +5,11 @@ import {
   IsPositive,
   IsBoolean,
   IsOptional,
+  IsObject,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Company } from '../../companies/entities/company.entity';
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString()
@@ -27,18 +30,15 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   @ApiProperty({ description: `User name` })
   readonly name: string;
 
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   @ApiProperty({ description: `User lastname` })
   readonly lastName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly city: string;
 
   @IsString()
   @IsOptional()
@@ -58,6 +58,11 @@ export class CreateUserDto {
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty()
+  readonly isTemplate: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty()
   readonly isActive: boolean;
 
   @IsBoolean()
@@ -70,13 +75,13 @@ export class CreateUserDto {
   @ApiProperty()
   readonly canDownload: boolean;
 
-  @IsPositive()
-  @IsOptional()
-  @ApiProperty()
-  readonly countryId: number;
-
-  @IsPositive()
+  @IsBoolean()
   @IsNotEmpty()
   @ApiProperty()
-  readonly companyId: number;
+  readonly useMfa: boolean;
+
+  @IsObject()
+  @IsNotEmpty()
+  @ApiProperty({ description: `User company` })
+  readonly company: Partial<Company>;
 }

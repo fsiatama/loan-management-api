@@ -56,15 +56,27 @@ export class AzureB2cService {
     ];
   }
 
+  private getUsername(user: User) {
+    const userName = user.username.trim().toLowerCase().replace(/\*/g, '');
+    return `${userName}@sicexapplication.onmicrosoft.com`;
+  }
+
   async create(user: User) {
     const userToCreate = util.userDtoToAzureB2cDto(user);
 
-    console.log(userToCreate);
+    // console.log(userToCreate);
 
     try {
       return await this.msGraphClient.api('/users').post(userToCreate);
     } catch (error) {
       console.log(error);
+      const body = JSON.parse(error.body);
+      if (body) {
+        throw new HttpException(
+          `Error on Azure AD: ${body.message}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       throw new Error('Error on create user at Azure B');
     }
   }
@@ -106,8 +118,7 @@ export class AzureB2cService {
 
   async update(user: User) {
     try {
-      const userName = user.username.trim().toLowerCase().replace(/\*/g, '');
-      const userPrincipalName = `${userName}@sicexapplication.onmicrosoft.com`;
+      const userPrincipalName = this.getUsername(user);
 
       const exist = await this.getUser(userPrincipalName);
       if (exist === false) {
@@ -123,12 +134,36 @@ export class AzureB2cService {
         .patch(userToUpdate);
     } catch (error) {
       console.log(error);
-      return error;
+      const body = JSON.parse(error.body);
+      if (body) {
+        throw new HttpException(
+          `Error on Azure AD: ${body.message}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw error;
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} azureB2c`;
+  async remove(user: User) {
+    try {
+      const userPrincipalName = this.getUsername(user);
+      return await this.msGraphClient
+        .api(`/users/${userPrincipalName}`)
+        .delete();
+    } catch (error) {
+      const body = JSON.parse(error.body);
+      console.log(body);
+      if (body.code !== 'Request_ResourceNotFound') {
+        throw error;
+      } else if (body) {
+        throw new HttpException(
+          `Error on Azure AD: ${body.message}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
   }
 
   async bulkCreate(data: any[]) {

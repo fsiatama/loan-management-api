@@ -14,9 +14,9 @@ export default registerAs('config', () => ({
   azureMsal: {
     extensionsClientId: process.env.AZURE_B2C_EXTENSIONS_CLIENT_ID,
     auth: {
-      clientId: process.env.AZURE_B2C_CLIENT_ID,
+      clientId: process.env.AZURE_B2C_CLIENT_ADMIN_ID,
       authority: `https://login.microsoftonline.com/${process.env.AZURE_B2C_TENANT_ID}`,
-      clientSecret: process.env.AZURE_B2C_CLIENT_SECRET,
+      clientSecret: process.env.AZURE_B2C_CLIENT_ADMIN_SECRET,
     },
     tokenRequest: {
       scopes: ['https://graph.microsoft.com/.default'],
@@ -25,7 +25,7 @@ export default registerAs('config', () => ({
   azureAD: {
     credentials: {
       tenantName: process.env.AZURE_B2C_TENANT_NAME,
-      clientID: process.env.AZURE_B2C_CLIENT_ID,
+      clientID: process.env.AZURE_B2C_CLIENT_APP_ID,
     },
     policies: {
       policyName: process.env.AZURE_B2C_POLICY_NAME,

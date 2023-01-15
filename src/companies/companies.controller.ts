@@ -33,6 +33,11 @@ export class CompaniesController {
     return this.companiesService.findAll(params);
   }
 
+  @Get('names')
+  findAllnames(@Query() params: FilterCompaniesDto) {
+    return this.companiesService.findAllNames(params);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Company> {
     return this.companiesService.findOne(+id);
@@ -43,8 +48,8 @@ export class CompaniesController {
     return this.companiesService.update(+id, updateCompanyDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companiesService.remove(+id);
+  @Delete('batch')
+  batchRemove(@Body() keys) {
+    return this.companiesService.batchRemove(keys);
   }
 }

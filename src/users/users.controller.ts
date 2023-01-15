@@ -54,8 +54,8 @@ export class UsersController {
     return this.usersService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Delete('batch')
+  batchRemove(@Body() keys) {
+    return this.usersService.batchRemove(keys);
   }
 }

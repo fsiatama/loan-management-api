@@ -21,7 +21,7 @@ class Util {
       preferredLanguage: user.langId === 1 ? 'es-ES' : 'en-US',
       surname: user.lastName,
       mobilePhone: user.phone || '-',
-      mail: email,
+      // mail: email, // El uso de email no funciona para QH ya que tiene varios usuarios con el mismo correo
       //CAChallengeIsMfa: true,
       //CAChallengeIsChgPwd: false,
       //CAChallengeIsBlock: false,

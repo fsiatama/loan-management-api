@@ -42,9 +42,9 @@ export class UsersService {
         );
       }
     }
-    if (data.companyId) {
+    if (data.company) {
       const company = await this.companyRepo.findOneBy({
-        id: data.companyId,
+        id: data.company.id,
       });
       if (!company) {
         throw new HttpException('Company not exist', HttpStatus.NOT_FOUND);
@@ -52,7 +52,7 @@ export class UsersService {
       newUser.company = company;
     }
 
-    if (data.countryId) {
+    /*if (data.countryId) {
       const country = await this.countryRepo.findOneBy({
         id: data.countryId,
       });
@@ -60,7 +60,7 @@ export class UsersService {
         throw new HttpException('Country not exist', HttpStatus.NOT_FOUND);
       }
       newUser.country = country;
-    }
+    }*/
     return newUser;
   }
 
@@ -93,6 +93,7 @@ export class UsersService {
       select: ['name', 'lastName', 'id'],
     });
   }
+
   async findAll(params?: FilterUsersDto): Promise<API.Response<User>> {
     const { pageSize = 20, current = 1, name } = params;
 
@@ -168,6 +169,7 @@ export class UsersService {
       const newUser = await this.validateReferences(changes, user);
       const userUpdated = await queryRunner.manager.save(newUser);
       await this.azureB2cService.update(userUpdated);
+
       await queryRunner.commitTransaction();
       return userUpdated;
     } catch (err) {
@@ -181,5 +183,29 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async batchRemove({ key }: { key: number[] }) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await key.reduce(async (antPromise, item) => {
+        await antPromise;
+        const user = await this.findOne(item);
+        await this.azureB2cService.remove(user);
+        this.userRepo.delete(item);
+      }, Promise.resolve());
+
+      await queryRunner.commitTransaction();
+      return { success: true };
+    } catch (err) {
+      console.log('Delete Users transaction failed');
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
