@@ -114,9 +114,7 @@ export class UsersService {
         { email: Like(`%${name}%`) },
         { username: Like(`%${name}%`) },
         {
-          company: {
-            name: Like(`%${name}%`),
-          },
+          company: [{ name: Like(`%${name}%`) }, { nit: Like(`%${name}%`) }],
         },
       ];
     }

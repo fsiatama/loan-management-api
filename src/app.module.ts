@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CountriesModule } from './countries/countries.module';
 import { ProductsModule } from './products/products.module';
-import { SuscriptionsModule } from './suscriptions/suscriptions.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { AzureB2cModule } from './azure-b2c/azure-b2c.module';
 import { CompaniesModule } from './companies/companies.module';
 
@@ -26,7 +26,7 @@ import configuration from './config/configuration';
     UsersModule,
     CountriesModule,
     ProductsModule,
-    SuscriptionsModule,
+    SubscriptionsModule,
     AzureB2cModule,
     CompaniesModule,
   ],

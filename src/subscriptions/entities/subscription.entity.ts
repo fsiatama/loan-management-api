@@ -9,7 +9,7 @@ import { User } from '../../users/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
 
 @Entity('accesoprod')
-export class Suscription {
+export class Subscription {
   @PrimaryGeneratedColumn('increment', { type: 'int', name: 'accesoprod_id' })
   id: number;
 
@@ -41,7 +41,7 @@ export class Suscription {
   @JoinColumn({ name: 'accesoprod_usuario_id' })
   user: User;
 
-  //@ManyToOne(() => Product, { nullable: false })
-  //@JoinColumn({ name: 'accesoprod_producto_id' })
-  //products: Product[];
+  @ManyToOne(() => Product, { nullable: false })
+  @JoinColumn({ name: 'accesoprod_producto_id' })
+  product: Product;
 }
