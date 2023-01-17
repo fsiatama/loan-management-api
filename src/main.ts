@@ -24,7 +24,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('API')
-    .setDescription('SICEX AUTH API')
+    .setDescription('BLUE PHOENIX API')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

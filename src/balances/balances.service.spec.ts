@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AzureB2cService } from './azure-b2c.service';
+import { BalancesService } from './balances.service';
 
-describe('AzureB2cService', () => {
-  let service: AzureB2cService;
+describe('BalancesService', () => {
+  let service: BalancesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AzureB2cService],
+      providers: [BalancesService],
     }).compile();
 
-    service = module.get<AzureB2cService>(AzureB2cService);
+    service = module.get<BalancesService>(BalancesService);
   });
 
   it('should be defined', () => {

@@ -11,6 +11,11 @@ import { ProductsModule } from './products/products.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { AzureB2cModule } from './azure-b2c/azure-b2c.module';
 import { CompaniesModule } from './companies/companies.module';
+import { ClientsModule } from './clients/clients.module';
+import { LoansModule } from './loans/loans.module';
+import { PaymentsModule } from './payments/payments.module';
+import { BalancesModule } from './balances/balances.module';
+import { TermsModule } from './terms/terms.module';
 
 import configuration from './config/configuration';
 
@@ -29,6 +34,11 @@ import configuration from './config/configuration';
     SubscriptionsModule,
     AzureB2cModule,
     CompaniesModule,
+    ClientsModule,
+    LoansModule,
+    PaymentsModule,
+    BalancesModule,
+    TermsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

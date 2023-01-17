@@ -12,7 +12,7 @@ import configuration from '../config/configuration';
         const { username, host, dbName, password, port } =
           configService.database;
         return {
-          type: 'mysql',
+          type: 'postgres',
           host,
           port,
           username,
