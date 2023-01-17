@@ -7,62 +7,33 @@ import {
   Index,
 } from 'typeorm';
 
-import { Country } from '../../countries/entities/country.entity';
-import { Company } from '../../companies/entities/company.entity';
-
-@Entity('usuario')
+@Entity()
 export class User {
-  @PrimaryGeneratedColumn('increment', { type: 'int', name: 'usuario_id' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'int', name: 'usuario_idioma_id' })
-  langId: number;
-
-  @ManyToOne((): typeof Country => Country, { nullable: false })
-  @JoinColumn({ name: 'usuario_pais_id' })
-  country: Country;
-
-  @ManyToOne((): typeof Company => Company, { nullable: false })
-  @JoinColumn({ name: 'usuario_empresa_id' })
-  company: Company;
-
-  @Column({ type: 'varchar', length: 20, name: 'usuario_ciudad' })
-  city: string;
-
-  @Column({ type: 'varchar', length: 20, name: 'usuario_telefono' })
+  @Column({ type: 'varchar', length: 20 })
   phone: string;
 
-  @Column({ type: 'varchar', length: 60, name: 'usuario_nombres' })
-  name: string;
+  @Column({ type: 'varchar', length: 50, name: 'first_name' })
+  firstName: string;
 
-  @Column({ type: 'varchar', length: 60, name: 'usuario_apellidos' })
+  @Column({ type: 'varchar', length: 50, name: 'last_name' })
   lastName: string;
 
   @Index({ unique: true })
-  @Column({ type: 'varchar', length: 15, name: 'usuario_login' })
+  @Column({ type: 'varchar', length: 15 })
   username: string;
 
-  @Column({ type: 'varchar', length: 50, name: 'usuario_password' })
+  @Column({ type: 'varchar', length: 50 })
   password: string;
 
-  @Column({ type: 'varchar', length: 100, name: 'usuario_email' })
+  @Column({ type: 'varchar', length: 50 })
   email: string;
 
-  @Column({ type: 'bool', name: 'usuario_isroot' })
+  @Column({ type: 'bool', name: 'is_root' })
   isRoot: boolean;
 
-  @Column({ type: 'bool', name: 'usuario_activo' })
+  @Column({ type: 'bool', name: 'is_active' })
   isActive: boolean;
-
-  @Column({ type: 'bool', name: 'usuario_btn_ren' })
-  canRenovate: boolean;
-
-  @Column({ type: 'bool', name: 'usuario_download' })
-  canDownload: boolean;
-
-  @Column({ type: 'bool', name: 'usuario_mfa' })
-  useMfa: boolean;
-
-  @Column({ type: 'bool', name: 'usuario_is_template' })
-  isTemplate: boolean;
 }

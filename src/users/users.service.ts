@@ -7,22 +7,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, Like, Not, Repository } from 'typeorm';
-import { AzureB2cService } from '../azure-b2c/azure-b2c.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Country } from '../countries/entities/country.entity';
-import { Company } from '../companies/entities/company.entity';
 import { FilterUsersDto } from './dto/filter-users.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Country) private countryRepo: Repository<Country>,
-    @InjectRepository(Company) private companyRepo: Repository<Company>,
-    @Inject(forwardRef((): typeof AzureB2cService => AzureB2cService))
-    private azureB2cService: AzureB2cService,
     private dataSource: DataSource,
   ) {}
 
@@ -41,15 +34,6 @@ export class UsersService {
           HttpStatus.BAD_REQUEST,
         );
       }
-    }
-    if (data.company) {
-      const company = await this.companyRepo.findOneBy({
-        id: data.company.id,
-      });
-      if (!company) {
-        throw new HttpException('Company not exist', HttpStatus.NOT_FOUND);
-      }
-      newUser.company = company;
     }
 
     /*if (data.countryId) {
@@ -73,9 +57,8 @@ export class UsersService {
       const user = this.userRepo.create(data);
       const newUser = await this.validateReferences(data, user);
       const userCreated = await queryRunner.manager.save(newUser);
-      const userAD = await this.azureB2cService.create(userCreated);
       await queryRunner.commitTransaction();
-      return userAD;
+      return userCreated;
     } catch (err) {
       console.log('Create User transaction failed');
       await queryRunner.rollbackTransaction();
@@ -83,15 +66,6 @@ export class UsersService {
     } finally {
       await queryRunner.release();
     }
-  }
-
-  async findAllTemplates(params?: FilterUsersDto) {
-    return await this.userRepo.find({
-      where: {
-        isTemplate: true,
-      },
-      select: ['name', 'lastName', 'id'],
-    });
   }
 
   async findAll(params?: FilterUsersDto): Promise<API.Response<User>> {
@@ -109,13 +83,10 @@ export class UsersService {
         firstName = name;
       }
       options.where = [
-        { name: Like(`%${firstName}%`) },
+        { firstName: Like(`%${firstName}%`) },
         { lastName: Like(`%${lastName}%`) },
         { email: Like(`%${name}%`) },
         { username: Like(`%${name}%`) },
-        {
-          company: [{ name: Like(`%${name}%`) }, { nit: Like(`%${name}%`) }],
-        },
       ];
     }
     const [data, total] = await this.userRepo.findAndCount({
@@ -166,7 +137,6 @@ export class UsersService {
       this.userRepo.merge(user, changes);
       const newUser = await this.validateReferences(changes, user);
       const userUpdated = await queryRunner.manager.save(newUser);
-      await this.azureB2cService.update(userUpdated);
 
       await queryRunner.commitTransaction();
       return userUpdated;
@@ -192,7 +162,6 @@ export class UsersService {
       await key.reduce(async (antPromise, item) => {
         await antPromise;
         const user = await this.findOne(item);
-        await this.azureB2cService.remove(user);
         this.userRepo.delete(item);
       }, Promise.resolve());
 

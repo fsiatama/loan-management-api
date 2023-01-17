@@ -6,7 +6,6 @@ import { ConfigType } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
-import { AzureADStrategy } from './strategies/azure-ad.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import configuration from '../config/configuration';
@@ -28,6 +27,6 @@ import configuration from '../config/configuration';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AzureADStrategy, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}

@@ -8,7 +8,6 @@ import {
   IsObject,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Company } from '../../companies/entities/company.entity';
 import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
@@ -79,9 +78,4 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty()
   readonly useMfa: boolean;
-
-  @IsObject()
-  @IsNotEmpty()
-  @ApiProperty({ description: `User company` })
-  readonly company: Partial<Company>;
 }

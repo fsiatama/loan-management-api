@@ -1,4 +1,3 @@
-import { Loan } from 'src/loans/entities/loan.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Loan } from '../../loans/entities/loan.entity';
 
 @Entity()
 export class Client {
