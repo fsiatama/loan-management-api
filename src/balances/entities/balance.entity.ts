@@ -14,7 +14,7 @@ export class Balance {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'numeric' })
   ammount: number;
 
   @Exclude()

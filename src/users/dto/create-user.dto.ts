@@ -2,10 +2,8 @@ import {
   IsString,
   IsNotEmpty,
   IsEmail,
-  IsPositive,
   IsBoolean,
   IsOptional,
-  IsObject,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -31,7 +29,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Transform(({ value }) => value.toUpperCase())
   @ApiProperty({ description: `User name` })
-  readonly name: string;
+  readonly firstName: string;
 
   @IsString()
   @IsNotEmpty()
@@ -44,11 +42,6 @@ export class CreateUserDto {
   @ApiProperty()
   readonly phone: string;
 
-  @IsPositive()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly langId: number;
-
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty()
@@ -57,25 +50,5 @@ export class CreateUserDto {
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty()
-  readonly isTemplate: boolean;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
   readonly isActive: boolean;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly canRenovate: boolean;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly canDownload: boolean;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly useMfa: boolean;
 }

@@ -1,12 +1,7 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  forwardRef,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, Like, Not, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -35,16 +30,6 @@ export class UsersService {
         );
       }
     }
-
-    /*if (data.countryId) {
-      const country = await this.countryRepo.findOneBy({
-        id: data.countryId,
-      });
-      if (!country) {
-        throw new HttpException('Country not exist', HttpStatus.NOT_FOUND);
-      }
-      newUser.country = country;
-    }*/
     return newUser;
   }
 
@@ -56,6 +41,8 @@ export class UsersService {
     try {
       const user = this.userRepo.create(data);
       const newUser = await this.validateReferences(data, user);
+      const hashPassword = await bcrypt.hash(newUser.password, 10);
+      newUser.password = hashPassword;
       const userCreated = await queryRunner.manager.save(newUser);
       await queryRunner.commitTransaction();
       return userCreated;
@@ -106,7 +93,6 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.userRepo.findOne({
       where: { id },
-      relations: ['country', 'company'],
     });
 
     if (!user) {

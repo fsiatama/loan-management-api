@@ -14,14 +14,20 @@ export class Term {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'int2' })
   periods: number;
 
-  @Column({ name: 'annual_interest_rate' })
+  @Column({ type: 'numeric', name: 'annual_interest_rate' })
   annualInterestRate: number;
+
+  @Column({ type: 'numeric', name: 'late_payment_fee' })
+  latePaymentFee: number;
 
   @Column({ type: 'date', name: 'begin_to_apply_date' })
   beginToApplyDate: string;
+
+  @Column({ type: 'int2', name: 'cut_off_day' })
+  cutOffDay: number;
 
   @Exclude()
   @CreateDateColumn({

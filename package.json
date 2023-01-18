@@ -21,9 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "typeorm-ts-node-commonjs --dataSource ./src/database/data-source.ts",
     "migrations:generate": "typeorm-ts-node-commonjs migration:generate --dataSource ./src/database/data-source.ts",
-    "migrations:run": "npm run typeorm -- migration:run",
-    "migrations:show": "npm run typeorm -- migration:show",
-    "migrations:drop": "npm run typeorm -- schema:drop"
+    "migrations:run": "typeorm-ts-node-commonjs migration:run --dataSource ./src/database/data-source.ts",
+    "migrations:show": "typeorm-ts-node-commonjs migration:show --dataSource ./src/database/data-source.ts",
+    "migrations:drop": "typeorm-ts-node-commonjs schema:drop --dataSource ./src/database/data-source.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^1.0.1",
@@ -35,6 +35,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.1.4",
     "@nestjs/typeorm": "^9.0.1",
+    "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "date-fns": "^2.29.3",

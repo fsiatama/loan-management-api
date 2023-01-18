@@ -20,7 +20,7 @@ export class Loan {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'numeric' })
   ammount: number;
 
   @Column({ type: 'date', name: 'start_date' })
