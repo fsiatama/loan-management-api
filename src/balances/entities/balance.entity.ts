@@ -15,7 +15,7 @@ export class Balance {
   id: number;
 
   @Column({ type: 'numeric' })
-  ammount: number;
+  amount: number;
 
   @Exclude()
   @CreateDateColumn({
