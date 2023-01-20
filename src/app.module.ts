@@ -8,9 +8,10 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ClientsModule } from './clients/clients.module';
 import { LoansModule } from './loans/loans.module';
-import { PaymentsModule } from './payments/payments.module';
 import { BalancesModule } from './balances/balances.module';
 import { TermsModule } from './terms/terms.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { TransactionTypesModule } from './transaction-types/transaction-types.module';
 
 import configuration from './config/configuration';
 
@@ -26,9 +27,10 @@ import configuration from './config/configuration';
     UsersModule,
     ClientsModule,
     LoansModule,
-    PaymentsModule,
     BalancesModule,
     TermsModule,
+    TransactionsModule,
+    TransactionTypesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

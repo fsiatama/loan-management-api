@@ -11,9 +11,9 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Client } from '../../clients/entities/client.entity';
-import { Payment } from '../../payments/entities/payment.entity';
 import { Term } from '../../terms/entities/term.entity';
 import { Balance } from '../../balances/entities/balance.entity';
+import { Transaction } from '../../transactions/entities/transaction.entity';
 
 @Entity()
 export class Loan {
@@ -21,7 +21,7 @@ export class Loan {
   id: number;
 
   @Column({ type: 'numeric' })
-  ammount: number;
+  amount: number;
 
   @Column({ type: 'date', name: 'start_date' })
   startDate: string;
@@ -46,8 +46,8 @@ export class Loan {
   client: Client;
 
   @Exclude()
-  @OneToMany(() => Payment, (payment) => payment.loan)
-  payments: Payment[];
+  @OneToMany(() => Transaction, (transaction) => transaction.loan)
+  transactions: Transaction[];
 
   @Exclude()
   @OneToMany(() => Term, (term) => term.loan)

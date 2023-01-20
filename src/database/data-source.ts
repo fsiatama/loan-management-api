@@ -1,23 +1,23 @@
-import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { DataSource } from 'typeorm';
+import { URL } from 'url';
 import { config } from 'dotenv';
 
 config();
 
 const configService = new ConfigService();
 
-export const connectionSource = new DataSource({
+const dbUrl = new URL(configService.get('DATABASE_URL'));
+const routingId = dbUrl.searchParams.get('options');
+dbUrl.searchParams.delete('options');
+
+export const AppDataSource = new DataSource({
   type: 'cockroachdb',
-  host: configService.get('DB_SERVER'),
-  port: configService.get('DB_PORT'),
-  username: configService.get('DB_USER'),
-  password: configService.get('DB_PASSWORD'),
-  database: configService.get('DB_NAME'),
-  migrationsRun: true,
-  logging: true,
+  url: dbUrl.toString(),
   ssl: true,
-  synchronize: true,
   entities: ['src/**/*.entity.ts'],
   migrations: ['src/database/migrations/*.ts'],
-  migrationsTableName: 'custom_migration_table',
+  extra: {
+    options: routingId,
+  },
 });

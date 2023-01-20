@@ -8,9 +8,10 @@ import {
   Column,
 } from 'typeorm';
 import { Loan } from '../../loans/entities/loan.entity';
+import { TransactionType } from '../../transaction-types/entities/transaction-type.entity';
 
 @Entity()
-export class Payment {
+export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,7 +19,7 @@ export class Payment {
   date: string;
 
   @Column({ type: 'numeric' })
-  ammount: number;
+  amount: number;
 
   @Column({ type: 'numeric', name: 'applied_to_interest' })
   appliedToInterest: number;
@@ -28,9 +29,6 @@ export class Payment {
 
   @Column({ type: 'numeric', name: 'ending_balance' })
   endingBalance: number;
-
-  @Column({ type: 'numeric', name: 'extra_credit' })
-  extraCredit: number;
 
   @Column({ type: 'varchar', length: 255 })
   description: string;
@@ -51,6 +49,9 @@ export class Payment {
   })
   updateAt: Date;
 
-  @ManyToOne(() => Loan, (loan) => loan.payments)
+  @ManyToOne(() => Loan, (loan) => loan.transactions)
   loan: Loan;
+
+  @ManyToOne(() => TransactionType, (type) => type.transactions)
+  transactionType: TransactionType;
 }
