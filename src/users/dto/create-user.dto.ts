@@ -38,7 +38,7 @@ export class CreateUserDto {
   readonly lastName: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
   readonly phone: string;
 

@@ -77,7 +77,6 @@ export class UsersService {
       ];
     }
     const [data, total] = await this.userRepo.findAndCount({
-      relations: ['country', 'company'],
       ...options,
     });
 

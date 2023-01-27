@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { PrimaryGeneratedColumn, Column, Entity, Index } from 'typeorm';
 
 @Entity()
@@ -18,9 +19,11 @@ export class User {
   @Column({ type: 'varchar', length: 15 })
   username: string;
 
+  @Exclude()
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
+  @Index({ unique: true })
   @Column({ type: 'varchar', length: 50 })
   email: string;
 
