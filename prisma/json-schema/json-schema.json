@@ -1,0 +1,438 @@
+{
+  "$id": "blue-phoenix-schema-id",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "email": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "password": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "name": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "borrowers": {
+          "type": "array",
+          "originalType": "Borrower",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+          }
+        },
+        "Loan": {
+          "type": "array",
+          "originalType": "Loan",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          }
+        },
+        "Transaction": {
+          "type": "array",
+          "originalType": "Transaction",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+          }
+        },
+        "Term": {
+          "type": "array",
+          "originalType": "Term",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Term"
+          }
+        }
+      },
+      "required": [
+        "email",
+        "password",
+        "name"
+      ]
+    },
+    "Borrower": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "email": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "firstName": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "lastName": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "address": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Address"
+        },
+        "uinsert": {
+          "$ref": "blue-phoenix-schema-id#/definitions/User"
+        },
+        "uinsertId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "Loan_Loan_borrowerPrincipal": {
+          "type": "array",
+          "originalType": "Loan",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          }
+        },
+        "Loan_Loan_coBorrower": {
+          "type": "array",
+          "originalType": "Loan",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          }
+        }
+      },
+      "required": [
+        "email",
+        "firstName",
+        "lastName",
+        "uinsertId",
+        "updatedAt"
+      ]
+    },
+    "Loan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "uinsert": {
+          "$ref": "blue-phoenix-schema-id#/definitions/User"
+        },
+        "borrower1": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+        },
+        "borrower2": {
+          "anyOf": [
+            {
+              "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "originalType": "Borrower"
+        },
+        "amount": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "startDate": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "transactions": {
+          "type": "array",
+          "originalType": "Transaction",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+          }
+        },
+        "terms": {
+          "type": "array",
+          "originalType": "Term",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Term"
+          }
+        },
+        "uinsertId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "borrower1Id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "borrower2Id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "amount",
+        "startDate",
+        "updatedAt",
+        "uinsertId",
+        "borrower1Id"
+      ]
+    },
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "date": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "appliedToInterest": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "appliedToPrincipal": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "endingBalance": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        },
+        "loan": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+        },
+        "loanId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "uinsert": {
+          "$ref": "blue-phoenix-schema-id#/definitions/User"
+        },
+        "uinsertId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "concept": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+        },
+        "conceptId": {
+          "type": "string",
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "date",
+        "amount",
+        "appliedToInterest",
+        "appliedToPrincipal",
+        "endingBalance",
+        "loanId",
+        "uinsertId",
+        "conceptId"
+      ]
+    },
+    "Concept": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "name": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "conceptType": {
+          "type": "string",
+          "originalType": "ConceptEnumType",
+          "default": "CREDIT",
+          "enum": [
+            "DEBIT",
+            "CREDIT"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "transactions": {
+          "type": "array",
+          "originalType": "Transaction",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "Term": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "months": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "annualInterestRate": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "latePaymentFee": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "beginToApplyDate": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "cutOffDay": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "uinsert": {
+          "$ref": "blue-phoenix-schema-id#/definitions/User"
+        },
+        "uinsertId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "createdAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "loan": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+        },
+        "loanId": {
+          "type": "string",
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "months",
+        "annualInterestRate",
+        "latePaymentFee",
+        "beginToApplyDate",
+        "cutOffDay",
+        "uinsertId",
+        "loanId"
+      ]
+    },
+    "Address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "city": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "state": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "zip": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "phone": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "phone2": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        },
+        "phone3": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "street",
+        "city",
+        "state",
+        "zip",
+        "phone"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "user": {
+      "$ref": "blue-phoenix-schema-id#/definitions/User"
+    },
+    "borrower": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+    },
+    "loan": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+    },
+    "transaction": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+    },
+    "concept": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+    },
+    "term": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Term"
+    }
+  }
+}

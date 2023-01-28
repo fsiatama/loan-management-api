@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  IsBoolean,
-  IsOptional,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -17,11 +11,6 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ description: 'the username of user' })
-  readonly username: string;
-
-  @IsString()
-  @IsNotEmpty()
   @ApiProperty()
   readonly password: string;
 
@@ -29,26 +18,5 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Transform(({ value }) => value.toUpperCase())
   @ApiProperty({ description: `User name` })
-  readonly firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Transform(({ value }) => value.toUpperCase())
-  @ApiProperty({ description: `User lastname` })
-  readonly lastName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly phone: string;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly isRoot: boolean;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly isActive: boolean;
+  readonly name: string;
 }

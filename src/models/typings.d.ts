@@ -6,4 +6,19 @@ declare namespace API {
     success: boolean;
     total: number;
   };
+
+  type Address = {
+    street: String;
+    city: String;
+    state: String;
+    zip: String;
+    phone: String;
+    phone2?: String;
+    phone3?: String;
+  };
+
+  type PayloadToken = {
+    username: string;
+    sub: string;
+  };
 }

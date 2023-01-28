@@ -2,13 +2,57 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  //provider = "prisma-client-js"
+  provider = "prisma-client-js"
+}
+
+generator jsonSchema {
+  provider = "prisma-json-schema-generator"
+  keepRelationScalarFields = "true"
+  schemaId = "blue-phoenix-schema-id"
+  includeRequiredFields = "true"
+  persistOriginalType = "true"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+generator class_validator  {
   provider = "prisma-class-validator-generator"
 }
+
+// generator nestjsDto {
+//   provider                        = "prisma-generator-nestjs-dto"
+//   output                          = "./generated/nestjs-dto"
+//   outputToNestJsResourceStructure = "true"
+//   exportRelationModifierClasses   = "true"
+//   reExport                        = "false"
+//   createDtoPrefix                 = "Create"
+//   updateDtoPrefix                 = "Update"
+//   dtoSuffix                       = "Dto"
+//   entityPrefix                    = ""
+//   entitySuffix                    = ""
+//   fileNamingStyle                 = "camel"
+// }
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+type Address {
+  street String
+  city   String
+  state  String
+  zip    String
+  phone  String
+  phone2 String?
+  phone3 String?
+}
+
+enum ConceptEnumType {
+  DEBIT
+  CREDIT
 }
 
 model User {
@@ -89,19 +133,4 @@ model Term {
   createdAt          DateTime @default(now())
   loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
   loanId             String   @db.ObjectId
-}
-
-type Address {
-  street String
-  city   String
-  state  String
-  zip    String
-  phone  String
-  phone2 String?
-  phone3 String?
-}
-
-enum ConceptEnumType {
-  DEBIT
-  CREDIT
 }

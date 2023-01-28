@@ -3,15 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { ClientsModule } from './clients/clients.module';
 import { LoansModule } from './loans/loans.module';
-import { BalancesModule } from './balances/balances.module';
 import { TermsModule } from './terms/terms.module';
 import { TransactionsModule } from './transactions/transactions.module';
-import { TransactionTypesModule } from './transaction-types/transaction-types.module';
+import { BorrowersModule } from './borrowers/borrowers.module';
+import { ConceptsModule } from './concepts/concepts.module';
 
 import configuration from './config/configuration';
 
@@ -22,15 +20,13 @@ import configuration from './config/configuration';
       isGlobal: true,
       load: [configuration],
     }),
-    DatabaseModule,
     AuthModule,
     UsersModule,
-    ClientsModule,
     LoansModule,
-    BalancesModule,
     TermsModule,
     TransactionsModule,
-    TransactionTypesModule,
+    BorrowersModule,
+    ConceptsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
