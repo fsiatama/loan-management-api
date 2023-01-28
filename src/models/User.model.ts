@@ -1,32 +1,22 @@
-import { IsString, IsDefined } from "class-validator";
-import { Borrower, Loan, Transaction, Term } from "./";
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
 
 export class User {
-    @IsDefined()
-    @IsString()
-    id!: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  @ApiProperty({ description: 'the email of user' })
+  readonly email: string;
 
-    @IsDefined()
-    @IsString()
-    email!: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly password: string;
 
-    @IsDefined()
-    @IsString()
-    password!: string;
-
-    @IsDefined()
-    @IsString()
-    name!: string;
-
-    @IsDefined()
-    borrowers!: Borrower[];
-
-    @IsDefined()
-    Loan!: Loan[];
-
-    @IsDefined()
-    Transaction!: Transaction[];
-
-    @IsDefined()
-    Term!: Term[];
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
+  @ApiProperty({ description: `User name` })
+  readonly name: string;
 }

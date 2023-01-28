@@ -16,7 +16,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { FilterUsersDto } from './dto/filter-users.dto';
+import { FilterDto, MongoIdDto } from '../models';
 
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('users')
@@ -25,30 +25,30 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  create(@Body() createUserDto: CreateUserDto): Promise<Partial<User>> {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  findAll(@Query() params: FilterUsersDto) {
+  findAll(@Query() params: FilterDto) {
     return this.usersService.findAll(params);
   }
 
   @Get('profile')
   getProfile(@Request() req) {
-    const { sub } = req.user;
-    return this.usersService.findOne(sub);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+    const { sub: id } = req.user;
     return this.usersService.findOne({ id });
   }
 
+  @Get(':id')
+  findOne(@Param() urlParams: MongoIdDto) {
+    return this.usersService.findOne({ id: urlParams.id });
+  }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param() urlParams: MongoIdDto, @Body() updateUserDto: UpdateUserDto) {
     const params = {
-      where: { id },
+      where: { id: urlParams.id },
       data: updateUserDto,
     };
 

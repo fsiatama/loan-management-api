@@ -2,10 +2,10 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../database/prisma.service';
-import { FilterUsersDto } from './dto/filter-users.dto';
+import { FilterDto } from '../models';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { id } from 'date-fns/locale';
+import { exclude } from '../models/helpers';
 
 @Injectable()
 export class UsersService {
@@ -30,7 +30,7 @@ export class UsersService {
     return data;
   }
 
-  async create(params: CreateUserDto): Promise<User> {
+  async create(params: CreateUserDto): Promise<Partial<User>> {
     try {
       const hashPassword = await bcrypt.hash(params.password, 10);
       const data: Prisma.UserCreateInput = {
@@ -39,15 +39,17 @@ export class UsersService {
       };
 
       await this.validateReferences(data, '000000000000000000000000');
-      return this.prismaService.user.create({
+      const user = await this.prismaService.user.create({
         data,
       });
+
+      return exclude(user, ['password']);
     } catch (error) {
       throw error;
     }
   }
 
-  async findAll(params?: FilterUsersDto): Promise<API.Response<User>> {
+  async findAll(params?: FilterDto): Promise<API.Response<Partial<User>>> {
     const { pageSize = 20, current = 1, name } = params;
 
     const options: {
@@ -56,9 +58,15 @@ export class UsersService {
       cursor?: Prisma.UserWhereUniqueInput;
       where?: Prisma.UserWhereInput;
       orderBy?: Prisma.UserOrderByWithRelationInput;
+      select: Prisma.UserSelect;
     } = {
       take: pageSize,
       skip: (current - 1) * pageSize,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
     };
 
     if (name) {
@@ -78,24 +86,30 @@ export class UsersService {
       };
     }
 
-    const result = await this.prismaService.user.findMany(options);
+    const userCount = await this.prismaService.user.count();
+
+    const result: Partial<User>[] = await this.prismaService.user.findMany(
+      options,
+    );
 
     return {
       data: result,
       current,
       pageSize,
       success: true,
-      total: 0,
+      total: userCount,
     };
   }
 
-  async findOne(where: Prisma.UserWhereUniqueInput): Promise<User | null> {
+  async findOne(
+    where: Prisma.UserWhereUniqueInput,
+  ): Promise<Partial<User> | null> {
     const user = await this.prismaService.user.findUnique({ where });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    return user;
+    return exclude(user, ['password']);
   }
 
   private async findDuplicateEmail(

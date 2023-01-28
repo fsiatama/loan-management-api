@@ -1,44 +1,75 @@
-import { IsString, IsDefined, IsDate } from 'class-validator';
-import { User, Loan } from './';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsNotEmptyObject,
+  IsObject,
+  ValidateNested,
+  IsOptional,
+  IsNotEmpty,
+  IsEmail,
+  IsNumberString,
+  IsPhoneNumber,
+} from 'class-validator';
+
+class Address {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly street: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly state: string;
+
+  @IsNumberString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly zip: string;
+
+  @IsPhoneNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly phone: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  readonly phone2?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  readonly phone3?: string;
+}
 
 export class Borrower {
-  @IsDefined()
   @IsString()
-  id!: string;
+  @IsEmail()
+  @IsNotEmpty()
+  @ApiProperty({ description: 'the email of borrower' })
+  readonly email: string;
 
-  @IsDefined()
   @IsString()
-  email!: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly firstName: string;
 
-  @IsDefined()
   @IsString()
-  firstName!: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly lastName: string;
 
-  @IsDefined()
-  @IsString()
-  lastName!: string;
-
-  @IsDefined()
-  address!: API.Address;
-
-  @IsDefined()
-  uinsert!: User;
-
-  @IsDefined()
-  @IsString()
-  uinsertId!: string;
-
-  @IsDefined()
-  @IsDate()
-  createdAt!: Date;
-
-  @IsDefined()
-  @IsDate()
-  updatedAt!: Date;
-
-  @IsDefined()
-  Loan_Loan_borrowerPrincipal!: Loan[];
-
-  @IsDefined()
-  Loan_Loan_coBorrower!: Loan[];
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Address)
+  @ApiProperty()
+  readonly address: Address;
 }

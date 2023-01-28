@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateBorrowerDto } from './create-borrower.dto';
+import { Borrower } from '../../models';
 
-export class UpdateBorrowerDto extends PartialType(CreateBorrowerDto) {}
+export class UpdateBorrowerDto extends PartialType(Borrower) {}
