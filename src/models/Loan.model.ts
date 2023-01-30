@@ -1,50 +1,45 @@
-import { IsString, IsDefined, IsOptional, IsDate } from "class-validator";
-import { User, Borrower, Transaction, Term } from "./";
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsDefined,
+  IsOptional,
+  IsDate,
+  IsNotEmptyObject,
+  IsObject,
+  ValidateNested,
+  IsPositive,
+  IsNumber,
+} from 'class-validator';
+import { Term, MongoIdDto } from './';
 
 export class Loan {
-    @IsDefined()
-    @IsString()
-    id!: string;
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => MongoIdDto)
+  @ApiProperty({ type: () => MongoIdDto })
+  readonly borrower1: MongoIdDto;
 
-    @IsDefined()
-    uinsert!: User;
+  @IsObject()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MongoIdDto)
+  @ApiProperty({ type: () => MongoIdDto })
+  readonly borrower2?: MongoIdDto;
 
-    @IsDefined()
-    borrower1!: Borrower;
+  @IsDefined()
+  @IsNumber()
+  @IsPositive()
+  readonly amount: number;
 
-    @IsOptional()
-    borrower2?: Borrower;
+  @IsDefined()
+  @IsDate()
+  readonly startDate: Date;
 
-    @IsDefined()
-    amount!: number;
-
-    @IsDefined()
-    @IsDate()
-    startDate!: Date;
-
-    @IsDefined()
-    @IsDate()
-    createdAt!: Date;
-
-    @IsDefined()
-    @IsDate()
-    updatedAt!: Date;
-
-    @IsDefined()
-    transactions!: Transaction[];
-
-    @IsDefined()
-    terms!: Term[];
-
-    @IsDefined()
-    @IsString()
-    uinsertId!: string;
-
-    @IsDefined()
-    @IsString()
-    borrower1Id!: string;
-
-    @IsOptional()
-    @IsString()
-    borrower2Id?: string;
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Term)
+  @ApiProperty({ type: () => Term })
+  readonly terms: Term;
 }

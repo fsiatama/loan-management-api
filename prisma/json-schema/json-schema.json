@@ -320,7 +320,15 @@
           "type": "integer",
           "originalType": "Int"
         },
+        "monthlyRate": {
+          "type": "number",
+          "originalType": "Float"
+        },
         "annualInterestRate": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "monthlyAmount": {
           "type": "number",
           "originalType": "Float"
         },
@@ -359,7 +367,9 @@
       },
       "required": [
         "months",
+        "monthlyRate",
         "annualInterestRate",
+        "monthlyAmount",
         "latePaymentFee",
         "beginToApplyDate",
         "cutOffDay",

@@ -11,7 +11,13 @@ export class Term {
     months!: number;
 
     @IsDefined()
+    monthlyRate!: number;
+
+    @IsDefined()
     annualInterestRate!: number;
+
+    @IsDefined()
+    monthlyAmount!: number;
 
     @IsDefined()
     latePaymentFee!: number;

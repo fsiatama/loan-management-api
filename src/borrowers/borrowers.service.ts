@@ -125,10 +125,14 @@ export class BorrowersService {
     };
   }
 
-  async findOne(
-    where: Prisma.BorrowerWhereUniqueInput,
-  ): Promise<Borrower | null> {
-    const borrower = await this.prismaService.borrower.findUnique({ where });
+  async findOne(where: Prisma.BorrowerWhereUniqueInput) {
+    const borrower = await this.prismaService.borrower.findUnique({
+      where,
+      include: {
+        Loan_Loan_borrowerPrincipal: true,
+        Loan_Loan_coBorrower: true,
+      },
+    });
 
     if (!borrower) {
       throw new HttpException('Borrower not found', HttpStatus.NOT_FOUND);
@@ -170,7 +174,20 @@ export class BorrowersService {
       return await this.prismaService.$transaction(async () => {
         await key.reduce(async (antPromise, item) => {
           await antPromise;
-          const user = await this.findOne({ id: item });
+          const borrower = await this.findOne({ id: item });
+
+          const { Loan_Loan_borrowerPrincipal, Loan_Loan_coBorrower } =
+            borrower;
+          if (
+            Loan_Loan_coBorrower.length > 0 ||
+            Loan_Loan_borrowerPrincipal.length > 0
+          ) {
+            throw new HttpException(
+              `The borrower : ${borrower.firstName} ${borrower.lastName}, has associated information and cannot be deleted.`,
+              HttpStatus.PRECONDITION_FAILED,
+            );
+          }
+
           await this.remove({ id: item });
         }, Promise.resolve());
       });

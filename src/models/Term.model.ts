@@ -1,44 +1,39 @@
-import { IsString, IsDefined, IsInt, IsDate } from "class-validator";
-import { User, Loan } from "./";
+import {
+  IsDefined,
+  IsInt,
+  IsDate,
+  Min,
+  Max,
+  IsPositive,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class Term {
-    @IsDefined()
-    @IsString()
-    id!: string;
+  @IsDefined()
+  @IsPositive()
+  @ApiProperty()
+  readonly months: number;
 
-    @IsDefined()
-    @IsInt()
-    months!: number;
+  @IsDefined()
+  @IsPositive()
+  @ApiProperty()
+  readonly annualInterestRate: number;
 
-    @IsDefined()
-    annualInterestRate!: number;
+  @IsDefined()
+  @IsNumber()
+  readonly latePaymentFee: number;
 
-    @IsDefined()
-    latePaymentFee!: number;
+  @IsOptional()
+  @IsDate()
+  readonly beginToApplyDate?: Date;
 
-    @IsDefined()
-    @IsDate()
-    beginToApplyDate!: Date;
-
-    @IsDefined()
-    @IsInt()
-    cutOffDay!: number;
-
-    @IsDefined()
-    uinsert!: User;
-
-    @IsDefined()
-    @IsString()
-    uinsertId!: string;
-
-    @IsDefined()
-    @IsDate()
-    createdAt!: Date;
-
-    @IsDefined()
-    loan!: Loan;
-
-    @IsDefined()
-    @IsString()
-    loanId!: string;
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  @Max(31)
+  @Type(() => Number)
+  readonly cutOffDay: number;
 }

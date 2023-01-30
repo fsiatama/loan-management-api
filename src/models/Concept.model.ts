@@ -6,20 +6,13 @@ import { ConceptEnumType } from './enums';
 export class Concept {
   @IsDefined()
   @IsString()
-  id!: string;
+  readonly id!: string;
 
   @IsDefined()
   @IsString()
-  name!: string;
+  readonly name!: string;
 
   @IsDefined()
   @IsIn(getEnumValues(ConceptEnumType))
-  conceptType!: ConceptEnumType;
-
-  @IsDefined()
-  @IsDate()
-  createdAt!: Date;
-
-  @IsDefined()
-  transactions!: Transaction[];
+  readonly conceptType!: ConceptEnumType;
 }

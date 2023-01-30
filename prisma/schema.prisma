@@ -124,7 +124,9 @@ model Concept {
 model Term {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   months             Int
+  monthlyRate        Float
   annualInterestRate Float
+  monthlyAmount      Float
   latePaymentFee     Float
   beginToApplyDate   DateTime
   cutOffDay          Int
