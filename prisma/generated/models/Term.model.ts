@@ -31,6 +31,10 @@ export class Term {
     cutOffDay!: number;
 
     @IsDefined()
+    @IsInt()
+    paymentDay!: number;
+
+    @IsDefined()
     uinsert!: User;
 
     @IsDefined()

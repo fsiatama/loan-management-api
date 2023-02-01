@@ -1,5 +1,6 @@
+import * as dayjs from 'dayjs';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Loan, Prisma } from '@prisma/client';
+import { Loan, Term, Prisma } from '@prisma/client';
 import { UpdateLoanDto } from './dto/update-loan.dto';
 import { FilterDto, Loan as LoanDto } from '../models';
 import { PrismaService } from '../database/prisma.service';
@@ -9,9 +10,12 @@ import { InterestCalculator } from '../helpers/interest-calculator';
 export class LoansService {
   constructor(private prismaService: PrismaService) {}
 
-  create(params: LoanDto, userId: string) {
+  private getCreateUpdateData(params: LoanDto | UpdateLoanDto, userId: string) {
     const { amount, borrower1, borrower2, startDate, terms } = params;
-    const { months, annualInterestRate } = terms;
+    const initialTerm = terms[0];
+    const { months, annualInterestRate } = initialTerm;
+
+    const coBorrower = borrower2.id ? borrower2 : undefined;
 
     const monthlyRate =
       InterestCalculator.calculateMonthlyRate(annualInterestRate);
@@ -28,7 +32,7 @@ export class LoansService {
       terms: {
         create: [
           {
-            ...terms,
+            ...initialTerm,
             beginToApplyDate: startDate,
             monthlyAmount,
             monthlyRate,
@@ -37,10 +41,15 @@ export class LoansService {
         ],
       },
       borrower1: { connect: borrower1 },
-      borrower2: { connect: borrower2 },
+      borrower2: { connect: coBorrower },
       uinsert: { connect: { id: userId } },
     };
 
+    return data;
+  }
+
+  create(params: LoanDto, userId: string) {
+    const data = this.getCreateUpdateData(params, userId);
     return this.prismaService.loan.create({
       data,
     });
@@ -75,6 +84,7 @@ export class LoansService {
             annualInterestRate: true,
             beginToApplyDate: true,
             cutOffDay: true,
+            paymentDay: true,
             latePaymentFee: true,
             monthlyAmount: true,
             monthlyRate: true,
@@ -85,12 +95,19 @@ export class LoansService {
         },
         borrower1: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
+            address: {
+              select: {
+                phone: true,
+              },
+            },
           },
         },
         borrower2: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
           },
@@ -98,7 +115,7 @@ export class LoansService {
       },
     };
 
-    const borrowerCount = await this.prismaService.loan.count();
+    const count = await this.prismaService.loan.count();
 
     const result: Partial<Loan>[] = await this.prismaService.loan.findMany(
       options,
@@ -109,7 +126,7 @@ export class LoansService {
       current,
       pageSize,
       success: true,
-      total: borrowerCount,
+      total: count,
     };
   }
 
@@ -118,11 +135,13 @@ export class LoansService {
       where,
       include: {
         terms: true,
+        borrower1: true,
+        transactions: true,
       },
     });
 
     if (!loan) {
-      throw new HttpException('Borrower not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Loan not found', HttpStatus.NOT_FOUND);
     }
     return loan;
   }
@@ -154,11 +173,148 @@ export class LoansService {
     return installments;
   }
 
-  update(id: number, updateLoanDto: UpdateLoanDto) {
-    return `This action updates a #${id} loan`;
+  async getStatistics() {
+    const count = await this.prismaService.loan.count();
+
+    type LoanType = Loan & {
+      terms: Term[];
+    };
+
+    const loans: LoanType[] = await this.prismaService.loan.findMany({
+      include: {
+        terms: true,
+        borrower1: true,
+        transactions: true,
+      },
+    });
+
+    const currentMonth = dayjs();
+    const previousMonth = currentMonth.subtract(1, 'month');
+
+    let currentMonthCount = 0;
+    let previousMonthCount = 0;
+    let currentMonthTotal = 0;
+    let previousMonthTotal = 0;
+
+    for (let loan of loans) {
+      const { terms, amount, startDate } = loan;
+      const term = terms[0];
+      const { months, monthlyRate } = term;
+
+      const installments = InterestCalculator.projectInstallments(
+        monthlyRate,
+        months,
+        amount,
+        startDate,
+      );
+
+      const currentMonthPayment = installments.find((item) =>
+        currentMonth.isSame(item.date, 'month'),
+      );
+      if (currentMonthPayment) {
+        currentMonthCount += 1;
+        currentMonthTotal += currentMonthPayment.monthlyAmount;
+      }
+      const previousMonthPayment = installments.find((item) =>
+        previousMonth.isSame(item.date, 'month'),
+      );
+      if (previousMonthPayment) {
+        previousMonthCount += 1;
+        previousMonthTotal += previousMonthPayment.monthlyAmount;
+      }
+    }
+
+    return [
+      {
+        id: 1,
+        value: currentMonthCount,
+        prevValue: previousMonthCount,
+        unit: 'Ls',
+      },
+      {
+        id: 2,
+        value: currentMonthTotal,
+        prevValue: previousMonthTotal,
+        unit: '$',
+      },
+    ];
+
+    const statistics = loans.reduce(
+      (accum: API.ComparativeStatistic[], loan: LoanType) => {
+        const statistic: API.ComparativeStatistic = {
+          id: 1,
+          value: 45,
+          prevValue: 30,
+          unit: 'kg',
+        };
+        return [...accum, statistic];
+      },
+      [],
+    );
+
+    return statistics;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} loan`;
+  async update(params: {
+    where: Prisma.LoanWhereUniqueInput;
+    data: UpdateLoanDto;
+    userId: string;
+  }) {
+    const { data, where, userId } = params;
+    try {
+      await this.findOne(where);
+      return await this.prismaService.$transaction(async (prisma) => {
+        await this.prismaService.term.deleteMany({
+          where: {
+            loanId: where.id,
+          },
+        });
+
+        const mongoData = this.getCreateUpdateData(data, userId);
+
+        return this.prismaService.loan.update({
+          data: mongoData,
+          where,
+        });
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private async remove(where: Prisma.LoanWhereUniqueInput): Promise<Loan> {
+    return this.prismaService.loan.delete({
+      where,
+    });
+  }
+
+  async batchRemove({ key }: { key: string[] }) {
+    try {
+      return await this.prismaService.$transaction(async () => {
+        await key.reduce(async (antPromise, item) => {
+          await antPromise;
+          const loan = await this.findOne({ id: item });
+
+          await this.prismaService.term.deleteMany({
+            where: {
+              loanId: item,
+            },
+          });
+
+          const { transactions } = loan;
+          if (transactions.length > 0) {
+            throw new HttpException(
+              `The loan by ${loan.amount} for borrower : ${loan.borrower1.firstName} ${loan.borrower1.lastName}, has associated information and cannot be deleted.`,
+              HttpStatus.PRECONDITION_FAILED,
+            );
+          }
+
+          await this.remove({ id: item });
+        }, Promise.resolve());
+      });
+    } catch (err) {
+      console.log('Delete Borrowers transaction failed');
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
   }
 }

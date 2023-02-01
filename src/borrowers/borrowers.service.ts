@@ -61,6 +61,60 @@ export class BorrowersService {
     }
   }
 
+  async findAllNames(params?: FilterDto) {
+    const { pageSize = 20, current = 1, name } = params;
+
+    const options: {
+      skip?: number;
+      take?: number;
+      cursor?: Prisma.BorrowerWhereUniqueInput;
+      where?: Prisma.BorrowerWhereInput;
+      orderBy?: Prisma.BorrowerOrderByWithRelationInput;
+      select: Prisma.BorrowerSelect;
+    } = {
+      take: pageSize,
+      skip: (current - 1) * pageSize,
+      orderBy: {
+        lastName: 'asc',
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        address: {
+          select: {
+            phone: true,
+          },
+        },
+      },
+    };
+
+    if (name) {
+      options.where = {
+        OR: [
+          {
+            firstName: {
+              contains: `${name}`,
+            },
+          },
+          {
+            lastName: {
+              contains: `${name}`,
+            },
+          },
+          {
+            email: {
+              contains: `${name}`,
+            },
+          },
+        ],
+      };
+    }
+
+    return this.prismaService.borrower.findMany(options);
+  }
+
   async findAll(params?: FilterDto) {
     const { pageSize = 20, current = 1, name } = params;
 
@@ -74,6 +128,9 @@ export class BorrowersService {
     } = {
       take: pageSize,
       skip: (current - 1) * pageSize,
+      orderBy: {
+        lastName: 'asc',
+      },
       select: {
         id: true,
         email: true,

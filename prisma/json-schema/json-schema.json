@@ -345,6 +345,10 @@
           "type": "integer",
           "originalType": "Int"
         },
+        "paymentDay": {
+          "type": "integer",
+          "originalType": "Int"
+        },
         "uinsert": {
           "$ref": "blue-phoenix-schema-id#/definitions/User"
         },
@@ -373,6 +377,7 @@
         "latePaymentFee",
         "beginToApplyDate",
         "cutOffDay",
+        "paymentDay",
         "uinsertId",
         "loanId"
       ]

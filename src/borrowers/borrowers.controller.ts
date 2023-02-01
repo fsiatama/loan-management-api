@@ -33,6 +33,11 @@ export class BorrowersController {
     return this.borrowersService.findAll(params);
   }
 
+  @Get('names')
+  findAllnames(@Query() params: FilterDto) {
+    return this.borrowersService.findAllNames(params);
+  }
+
   @Get(':id')
   findOne(@Param() urlParams: MongoIdDto) {
     return this.borrowersService.findOne({ id: urlParams.id });

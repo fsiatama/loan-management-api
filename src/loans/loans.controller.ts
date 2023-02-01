@@ -33,6 +33,11 @@ export class LoansController {
     return this.loansService.findAll(params);
   }
 
+  @Get('statistics')
+  getStatistics() {
+    return this.loansService.getStatistics();
+  }
+
   @Get(':id')
   findOne(@Param() urlParams: MongoIdDto) {
     return this.loansService.findOne({ id: urlParams.id });
@@ -44,12 +49,22 @@ export class LoansController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLoanDto: UpdateLoanDto) {
-    return this.loansService.update(+id, updateLoanDto);
+  update(
+    @Param() urlParams: MongoIdDto,
+    @Body() updateLoanDto: UpdateLoanDto,
+    @Request() req,
+  ) {
+    const { sub } = req.user;
+    const params = {
+      where: { id: urlParams.id },
+      data: updateLoanDto,
+      userId: sub,
+    };
+    return this.loansService.update(params);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.loansService.remove(+id);
+  @Delete('batch')
+  batchRemove(@Body() keys) {
+    return this.loansService.batchRemove(keys);
   }
 }

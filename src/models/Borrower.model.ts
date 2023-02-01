@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmptyObject,
@@ -53,6 +53,7 @@ export class Borrower {
   @IsString()
   @IsEmail()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toLowerCase())
   @ApiProperty({ description: 'the email of borrower' })
   readonly email: string;
 
@@ -63,6 +64,7 @@ export class Borrower {
 
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   @ApiProperty()
   readonly lastName: string;
 

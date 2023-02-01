@@ -51,4 +51,8 @@ export class InterestCalculator {
 
     return installment;
   }
+
+  static getFutureValue(interestRate: number, principal: number, term: number) {
+    return principal * Math.pow(1 + interestRate, term);
+  }
 }

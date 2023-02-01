@@ -9,6 +9,10 @@ import {
   ValidateNested,
   IsPositive,
   IsNumber,
+  IsArray,
+  IsNotEmpty,
+  ArrayMaxSize,
+  ArrayMinSize,
 } from 'class-validator';
 import { Term, MongoIdDto } from './';
 
@@ -18,28 +22,30 @@ export class Loan {
   @ValidateNested()
   @Type(() => MongoIdDto)
   @ApiProperty({ type: () => MongoIdDto })
-  readonly borrower1: MongoIdDto;
+  readonly borrower1!: MongoIdDto;
 
   @IsObject()
   @IsOptional()
-  @ValidateNested()
-  @Type(() => MongoIdDto)
   @ApiProperty({ type: () => MongoIdDto })
-  readonly borrower2?: MongoIdDto;
+  readonly borrower2: Partial<MongoIdDto>;
 
   @IsDefined()
   @IsNumber()
   @IsPositive()
+  @ApiProperty()
   readonly amount: number;
 
   @IsDefined()
   @IsDate()
+  @ApiProperty()
   readonly startDate: Date;
 
-  @IsNotEmptyObject()
-  @IsObject()
-  @ValidateNested()
+  @IsArray()
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(1)
+  @ArrayMaxSize(1)
   @Type(() => Term)
   @ApiProperty({ type: () => Term })
-  readonly terms: Term;
+  readonly terms: Term[];
 }

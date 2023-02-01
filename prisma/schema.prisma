@@ -130,6 +130,7 @@ model Term {
   latePaymentFee     Float
   beginToApplyDate   DateTime
   cutOffDay          Int
+  paymentDay         Int
   uinsert            User     @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
   uinsertId          String   @db.ObjectId
   createdAt          DateTime @default(now())

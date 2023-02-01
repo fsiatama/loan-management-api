@@ -36,4 +36,21 @@ export class Term {
   @Max(31)
   @Type(() => Number)
   readonly cutOffDay: number;
+
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  @Max(31)
+  @Type(() => Number)
+  readonly paymentDay: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty()
+  readonly monthlyAmount: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty()
+  readonly monthlyRate: number;
 }
