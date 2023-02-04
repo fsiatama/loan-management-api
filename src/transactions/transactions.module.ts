@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
+import { PrismaModule } from '../database/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [TransactionsController],
-  providers: [TransactionsService]
+  providers: [TransactionsService],
 })
 export class TransactionsModule {}

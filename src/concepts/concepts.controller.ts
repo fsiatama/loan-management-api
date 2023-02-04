@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ConceptsService } from './concepts.service';
-import { CreateConceptDto } from './dto/create-concept.dto';
 import { UpdateConceptDto } from './dto/update-concept.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Concept, FilterDto, MongoIdDto } from '../models';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('concepts')
 export class ConceptsController {
   constructor(private readonly conceptsService: ConceptsService) {}
 
   @Post()
-  create(@Body() createConceptDto: CreateConceptDto) {
+  create(@Body() createConceptDto: Concept) {
     return this.conceptsService.create(createConceptDto);
   }
 
   @Get()
-  findAll() {
-    return this.conceptsService.findAll();
+  findAll(@Query() params: FilterDto) {
+    return this.conceptsService.findAll(params);
+  }
+
+  @Get('names')
+  findAllNames(@Query() params: FilterDto) {
+    return this.conceptsService.findAllNames(params);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.conceptsService.findOne(+id);
+  findOne(@Param() urlParams: MongoIdDto) {
+    return this.conceptsService.findOne({ id: urlParams.id });
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateConceptDto: UpdateConceptDto) {
-    return this.conceptsService.update(+id, updateConceptDto);
+  update(
+    @Param() urlParams: MongoIdDto,
+    @Body() updateConceptDto: UpdateConceptDto,
+  ) {
+    const params = {
+      where: { id: urlParams.id },
+      data: updateConceptDto,
+    };
+    return this.conceptsService.update(params);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.conceptsService.remove(+id);
+  @Delete('batch')
+  batchRemove(@Body() keys) {
+    return this.conceptsService.batchRemove(keys);
   }
 }

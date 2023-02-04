@@ -34,7 +34,7 @@ export class BorrowersController {
   }
 
   @Get('names')
-  findAllnames(@Query() params: FilterDto) {
+  findAllNames(@Query() params: FilterDto) {
     return this.borrowersService.findAllNames(params);
   }
 

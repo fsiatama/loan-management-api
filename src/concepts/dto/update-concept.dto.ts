@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateConceptDto } from './create-concept.dto';
+import { Concept } from '../../models';
 
-export class UpdateConceptDto extends PartialType(CreateConceptDto) {}
+export class UpdateConceptDto extends PartialType(Concept) {}

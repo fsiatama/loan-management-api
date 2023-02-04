@@ -115,6 +115,34 @@ export class LoansService {
       },
     };
 
+    if (name) {
+      options.where = {
+        OR: [
+          {
+            borrower1: {
+              firstName: {
+                contains: `${name}`,
+              },
+            },
+          },
+          {
+            borrower1: {
+              lastName: {
+                contains: `${name}`,
+              },
+            },
+          },
+          {
+            borrower1: {
+              email: {
+                contains: `${name}`,
+              },
+            },
+          },
+        ],
+      };
+    }
+
     const count = await this.prismaService.loan.count();
 
     const result: Partial<Loan>[] = await this.prismaService.loan.findMany(

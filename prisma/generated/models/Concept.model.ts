@@ -1,4 +1,4 @@
-import { IsString, IsDefined, IsIn, IsDate } from "class-validator";
+import { IsString, IsDefined, IsBoolean, IsIn, IsDate } from "class-validator";
 import { Transaction } from "./";
 import { getEnumValues } from "../helpers";
 import { ConceptEnumType } from "../enums";
@@ -11,6 +11,10 @@ export class Concept {
     @IsDefined()
     @IsString()
     name!: string;
+
+    @IsDefined()
+    @IsBoolean()
+    isToThirdParty!: boolean;
 
     @IsDefined()
     @IsIn(getEnumValues(ConceptEnumType))

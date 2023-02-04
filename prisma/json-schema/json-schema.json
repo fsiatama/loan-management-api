@@ -283,6 +283,11 @@
           "type": "string",
           "originalType": "String"
         },
+        "isToThirdParty": {
+          "type": "boolean",
+          "originalType": "Boolean",
+          "default": false
+        },
         "conceptType": {
           "type": "string",
           "originalType": "ConceptEnumType",

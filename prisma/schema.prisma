@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 generator jsonSchema {
@@ -114,11 +115,12 @@ model Transaction {
 }
 
 model Concept {
-  id           String          @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  conceptType  ConceptEnumType @default(CREDIT)
-  createdAt    DateTime        @default(now())
-  transactions Transaction[]
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String          @unique
+  isToThirdParty  Boolean         @default(false)
+  conceptType     ConceptEnumType @default(CREDIT)
+  createdAt       DateTime        @default(now())
+  transactions    Transaction[]
 }
 
 model Term {
