@@ -96,16 +96,19 @@ export class BorrowersService {
           {
             firstName: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
           {
             lastName: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
           {
             email: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
         ],
@@ -152,16 +155,19 @@ export class BorrowersService {
           {
             firstName: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
           {
             lastName: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
           {
             email: {
               contains: `${name}`,
+              mode: 'insensitive',
             },
           },
         ],

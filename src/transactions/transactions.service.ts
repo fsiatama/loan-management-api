@@ -1,18 +1,25 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Concept, Transaction, Prisma } from '@prisma/client';
-import * as dayjs from 'dayjs';
 import {
-  FilterDto,
-  MongoIdDto,
-  Transaction as TransactionDto,
-} from '../models';
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
+import { Transaction, Prisma } from '@prisma/client';
+import * as dayjs from 'dayjs';
+import { Transaction as TransactionDto } from '../models';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '../database/prisma.service';
 import { FilterTransactionDto } from './dto/filter-transaction.dto';
+import { LoansService } from 'src/loans/loans.service';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @Inject(forwardRef(() => LoansService))
+    private loanService: LoansService,
+    private prismaService: PrismaService,
+  ) {}
 
   private getCreateUpdateData(
     params: TransactionDto | UpdateTransactionDto,
@@ -35,11 +42,59 @@ export class TransactionsService {
     return data;
   }
 
-  create(params: TransactionDto, userId: string) {
-    const data = this.getCreateUpdateData(params, userId);
-    return this.prismaService.transaction.create({
-      data,
-    });
+  async create(params: TransactionDto, userId: string) {
+    //
+    //return { success: true };
+    try {
+      const { loan: loanId, date, concept } = params;
+      const loan = await this.loanService.findOne({ id: loanId.id });
+      const { transactions, terms, amount } = loan;
+
+      const lastTerm = terms.pop();
+      const { monthlyRate } = lastTerm;
+      let [appliedToInterest, appliedToPrincipal, endingBalance] = [0, 0, 0];
+      const lastTransaction = transactions.pop();
+
+      if (lastTransaction) {
+        const isBefore = dayjs(date).isBefore(lastTransaction.date, 'day');
+        if (isBefore) {
+          throw new HttpException(
+            'You are unable to create this transaction as there are already transactions for this loan with later dates',
+            HttpStatus.PRECONDITION_FAILED,
+          );
+        }
+        appliedToInterest = lastTransaction.endingBalance * monthlyRate;
+        appliedToPrincipal = params.amount - appliedToInterest;
+        endingBalance = lastTransaction.endingBalance - appliedToPrincipal;
+      } else {
+        appliedToInterest = amount * monthlyRate;
+        appliedToPrincipal = params.amount - appliedToInterest;
+        endingBalance = amount - appliedToPrincipal;
+      }
+      const newTransaction: Prisma.TransactionCreateInput = {
+        amount: params.amount,
+        description: params.description,
+        date,
+        appliedToInterest,
+        appliedToPrincipal,
+        endingBalance,
+        loan: { connect: { id: loan.id } },
+        concept: { connect: concept },
+        uinsert: { connect: { id: userId } },
+      };
+
+      //return { monthlyRate, amount, newTransaction };
+
+      return await this.prismaService.$transaction(async (prisma) => {
+        //const data = this.getCreateUpdateData(newTransaction, userId);
+
+        return this.prismaService.transaction.create({
+          data: newTransaction,
+        });
+      });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async findAll(params: FilterTransactionDto) {
@@ -59,6 +114,9 @@ export class TransactionsService {
         id: true,
         amount: true,
         date: true,
+        appliedToInterest: true,
+        appliedToPrincipal: true,
+        endingBalance: true,
         uinsert: {
           select: {
             name: true,
@@ -112,7 +170,7 @@ export class TransactionsService {
   }
 
   async update(params: {
-    where: Prisma.LoanWhereUniqueInput;
+    where: Prisma.TransactionWhereUniqueInput;
     data: UpdateTransactionDto;
     userId: string;
   }) {
@@ -132,7 +190,7 @@ export class TransactionsService {
     }
   }
 
-  remove(where: Prisma.LoanWhereUniqueInput) {
+  remove(where: Prisma.TransactionWhereUniqueInput) {
     return this.prismaService.loan.delete({
       where,
     });

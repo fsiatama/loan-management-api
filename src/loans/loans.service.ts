@@ -1,14 +1,29 @@
 import * as dayjs from 'dayjs';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import * as isBetween from 'dayjs/plugin/isBetween';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Loan, Term, Prisma } from '@prisma/client';
 import { UpdateLoanDto } from './dto/update-loan.dto';
 import { FilterDto, Loan as LoanDto } from '../models';
 import { PrismaService } from '../database/prisma.service';
 import { InterestCalculator } from '../helpers/interest-calculator';
+import { TransactionsService } from '../transactions/transactions.service';
+import { ConceptEnumType } from '../models/enums';
+
+dayjs.extend(isBetween);
 
 @Injectable()
 export class LoansService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @Inject(forwardRef(() => TransactionsService))
+    private transactionsService: TransactionsService,
+    private prismaService: PrismaService,
+  ) {}
 
   private getCreateUpdateData(params: LoanDto | UpdateLoanDto, userId: string) {
     const { amount, borrower1, borrower2, startDate, terms } = params;
@@ -162,9 +177,18 @@ export class LoansService {
     const loan = await this.prismaService.loan.findUnique({
       where,
       include: {
-        terms: true,
+        terms: {
+          orderBy: {
+            beginToApplyDate: 'asc',
+          },
+        },
         borrower1: true,
-        transactions: true,
+        transactions: {
+          include: { concept: true },
+          orderBy: {
+            date: 'asc',
+          },
+        },
       },
     });
 
@@ -175,20 +199,16 @@ export class LoansService {
   }
 
   async projection(where: Prisma.LoanWhereUniqueInput) {
-    const loan = await this.prismaService.loan.findUnique({
-      where,
-      include: {
-        terms: true,
-      },
-    });
-
+    const loan = await this.findOne(where);
     if (!loan) {
-      throw new HttpException('Borrower not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Loan not found', HttpStatus.NOT_FOUND);
     }
+
+    const { transactions } = loan;
 
     const { terms, amount, startDate } = loan;
     const term = terms[0];
-    const { months, monthlyRate } = term;
+    const { months, monthlyRate, cutOffDay } = term;
 
     const installments = InterestCalculator.projectInstallments(
       monthlyRate,
@@ -196,9 +216,63 @@ export class LoansService {
       amount,
       startDate,
     );
+
+    let initBalance = amount;
+    let totalArrears = 0;
+
+    const data = installments.reduce((accum, installment) => {
+      const initDate = dayjs(installment.date).date(cutOffDay + 1);
+      const finalDate = initDate.add(1, 'month').date(cutOffDay);
+      const monthTransactions = transactions.filter((trn) =>
+        dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
+      );
+
+      let ideaPayment = installment.monthlyAmount + totalArrears;
+
+      const totalMonthTransactions = monthTransactions.reduce(
+        (summarize, trn) => {
+          const { concept } = trn;
+          let credit = 0;
+          if (!concept.isToThirdParty) {
+            credit =
+              concept.conceptType === ConceptEnumType.CREDIT
+                ? trn.amount
+                : trn.amount * -1;
+          }
+
+          return summarize + credit;
+        },
+        0,
+      );
+
+      const appliedToInterest = initBalance * monthlyRate;
+      const appliedToPrincipal =
+        monthTransactions.length > 0
+          ? totalMonthTransactions - appliedToInterest
+          : ideaPayment - appliedToInterest;
+      const endingBalance = initBalance - appliedToPrincipal;
+
+      const row = {
+        date: initDate.format('MM/DD/YYYY'),
+        initBalance,
+        ideaPayment,
+        realPayment: totalMonthTransactions,
+        appliedToInterest,
+        appliedToPrincipal,
+        endingBalance,
+        totalArrears,
+        monthTransactions,
+      };
+
+      totalArrears =
+        monthTransactions.length > 0 ? ideaPayment - totalMonthTransactions : 0;
+      initBalance = endingBalance;
+
+      return [...accum, row];
+    }, []);
     // console.log(installments);
 
-    return installments;
+    return data;
   }
 
   async getStatistics() {
