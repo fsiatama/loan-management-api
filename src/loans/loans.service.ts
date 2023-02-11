@@ -14,12 +14,17 @@ import { PrismaService } from '../database/prisma.service';
 import { InterestCalculator } from '../helpers/interest-calculator';
 import { TransactionsService } from '../transactions/transactions.service';
 import { ConceptEnumType } from '../models/enums';
+import { StatementPDF } from 'src/helpers/statement-pdf';
+import { ConfigType } from '@nestjs/config';
+import configuration from '../config/configuration';
 
 dayjs.extend(isBetween);
 
 @Injectable()
 export class LoansService {
   constructor(
+    @Inject(configuration.KEY)
+    private configService: ConfigType<typeof configuration>,
     @Inject(forwardRef(() => TransactionsService))
     private transactionsService: TransactionsService,
     private prismaService: PrismaService,
@@ -200,9 +205,6 @@ export class LoansService {
 
   async projection(where: Prisma.LoanWhereUniqueInput) {
     const loan = await this.findOne(where);
-    if (!loan) {
-      throw new HttpException('Loan not found', HttpStatus.NOT_FOUND);
-    }
 
     const { transactions } = loan;
 
@@ -219,60 +221,105 @@ export class LoansService {
 
     let initBalance = amount;
     let totalArrears = 0;
+    let installmentsCount = 1;
+    let pastDueInstallments = 0;
+    let lastPaymentDate: dayjs.Dayjs = null;
 
-    const data = installments.reduce((accum, installment) => {
-      const initDate = dayjs(installment.date).date(cutOffDay + 1);
-      const finalDate = initDate.add(1, 'month').date(cutOffDay);
-      const monthTransactions = transactions.filter((trn) =>
-        dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
-      );
+    const paymentConceptId = this.configService.coreBusiness.paymentConceptId;
 
-      let ideaPayment = installment.monthlyAmount + totalArrears;
+    const data = installments.reduce(
+      (accum: API.ProjectionRow[], installment) => {
+        const initDate = dayjs(installment.date).date(cutOffDay + 1);
+        const finalDate = initDate.add(1, 'month').date(cutOffDay);
+        const monthTransactions = transactions.filter((trn) =>
+          dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
+        );
 
-      const totalMonthTransactions = monthTransactions.reduce(
-        (summarize, trn) => {
-          const { concept } = trn;
-          let credit = 0;
-          if (!concept.isToThirdParty) {
-            credit =
-              concept.conceptType === ConceptEnumType.CREDIT
-                ? trn.amount
-                : trn.amount * -1;
-          }
+        let ideaPayment = installment.monthlyAmount + totalArrears;
 
-          return summarize + credit;
-        },
-        0,
-      );
+        let isThereAPayment: boolean = false;
 
-      const appliedToInterest = initBalance * monthlyRate;
-      const appliedToPrincipal =
-        monthTransactions.length > 0
-          ? totalMonthTransactions - appliedToInterest
-          : ideaPayment - appliedToInterest;
-      const endingBalance = initBalance - appliedToPrincipal;
+        const totalMonthTransactions = monthTransactions.reduce(
+          (summarize, trn) => {
+            const { concept } = trn;
+            let credit = 0;
+            if (!concept.isToThirdParty) {
+              credit =
+                concept.conceptType === ConceptEnumType.CREDIT
+                  ? trn.amount
+                  : trn.amount * -1;
+            }
+            if (concept.id === paymentConceptId) {
+              isThereAPayment = true;
+              lastPaymentDate = dayjs(trn.date);
+            }
 
-      const row = {
-        date: initDate.format('MM/DD/YYYY'),
-        initBalance,
-        ideaPayment,
-        realPayment: totalMonthTransactions,
-        appliedToInterest,
-        appliedToPrincipal,
-        endingBalance,
-        totalArrears,
-        monthTransactions,
-      };
+            return summarize + credit;
+          },
+          0,
+        );
 
-      totalArrears =
-        monthTransactions.length > 0 ? ideaPayment - totalMonthTransactions : 0;
-      initBalance = endingBalance;
+        pastDueInstallments = isThereAPayment ? 0 : pastDueInstallments + 1;
 
-      return [...accum, row];
-    }, []);
-    // console.log(installments);
+        const appliedToInterest = initBalance * monthlyRate;
+        const appliedToPrincipal =
+          monthTransactions.length > 0
+            ? totalMonthTransactions - appliedToInterest
+            : ideaPayment - appliedToInterest;
+        const endingBalance = initBalance - appliedToPrincipal;
+
+        const row: API.ProjectionRow = {
+          date: initDate.format('MM/DD/YYYY'),
+          initBalance,
+          pastDueInstallments,
+          lastPaymentDate: lastPaymentDate
+            ? lastPaymentDate.format('MM/DD/YYYY')
+            : '',
+          ideaPayment:
+            totalArrears > 0 ? ideaPayment : installment.monthlyAmount,
+          realPayment: totalMonthTransactions,
+          appliedToInterest,
+          appliedToPrincipal,
+          endingBalance,
+          totalArrears:
+            totalArrears > 0 ? ideaPayment - installment.monthlyAmount : 0,
+          monthTransactions,
+          installment: `${installmentsCount} of ${months}`,
+        };
+
+        totalArrears =
+          monthTransactions.length > 0
+            ? ideaPayment - totalMonthTransactions
+            : 0;
+        initBalance = endingBalance;
+        installmentsCount += 1;
+
+        return [...accum, row];
+      },
+      [],
+    );
+
+    // TODO: if endingBalance is greater than zero, i need add rows to proyection
 
     return data;
+  }
+
+  async generateStatement(where: Prisma.LoanWhereUniqueInput, date: string) {
+    const projection = await this.projection(where);
+    const loan = await this.findOne(where);
+
+    const currentStatement = projection.find((trn) =>
+      dayjs(trn.date).isSame(date, 'month'),
+    );
+
+    if (!currentStatement) {
+      throw new HttpException(
+        "Loan doesn't have information for this date",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return StatementPDF.generate({ loan, projection, date });
   }
 
   async getStatistics() {

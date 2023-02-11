@@ -9,6 +9,8 @@ import {
   Delete,
   UseGuards,
   Query,
+  StreamableFile,
+  Header,
 } from '@nestjs/common';
 import { LoansService } from './loans.service';
 import { UpdateLoanDto } from './dto/update-loan.dto';
@@ -41,6 +43,27 @@ export class LoansController {
   @Get(':id')
   findOne(@Param() urlParams: MongoIdDto) {
     return this.loansService.findOne({ id: urlParams.id });
+  }
+
+  @Get('statement/:id')
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename="statement.pdf"')
+  async getStatementFile(
+    @Param() urlParams: MongoIdDto,
+    @Query('date') date: string,
+  ) {
+    const file = await this.loansService.generateStatement(
+      {
+        id: urlParams.id,
+      },
+      date,
+    );
+
+    if (file) {
+      return new StreamableFile(file);
+    }
+
+    return { success: false };
   }
 
   @Get('projection/:id')

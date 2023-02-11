@@ -3,7 +3,6 @@ import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
 import { PrismaModule } from '../database/prisma.module';
 import { LoansService } from '../loans/loans.service';
-
 @Module({
   imports: [PrismaModule],
   controllers: [TransactionsController],

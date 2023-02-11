@@ -11,4 +11,7 @@ export default registerAs('config', () => ({
     port: parseInt(process.env.DB_PORT, 10) || 26257,
     dbName: process.env.DB_NAME,
   },
+  coreBusiness: {
+    paymentConceptId: process.env.PAYMENT_CONCEPT_ID,
+  },
 }));

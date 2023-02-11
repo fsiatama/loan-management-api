@@ -43,8 +43,6 @@ export class TransactionsService {
   }
 
   async create(params: TransactionDto, userId: string) {
-    //
-    //return { success: true };
     try {
       const { loan: loanId, date, concept } = params;
       const loan = await this.loanService.findOne({ id: loanId.id });

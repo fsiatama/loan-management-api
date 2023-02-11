@@ -35,7 +35,7 @@ export class InterestCalculator {
       toPrincipal = monthlyAmount - toInterest;
       ending = beginning - toPrincipal;
 
-      const row = {
+      const row: API.InstallmentRow = {
         date,
         beginning,
         monthlyAmount,

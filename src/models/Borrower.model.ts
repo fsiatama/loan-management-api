@@ -15,17 +15,20 @@ import {
 class Address {
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   @ApiProperty()
   readonly street: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
+  @Transform(({ value }) => value.toUpperCase())
   readonly city: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
+  @Transform(({ value }) => value.toUpperCase())
   readonly state: string;
 
   @IsNumberString()
