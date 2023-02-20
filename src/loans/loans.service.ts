@@ -17,6 +17,7 @@ import { ConceptEnumType } from '../models/enums';
 import { StatementPDF } from 'src/helpers/statement-pdf';
 import { ConfigType } from '@nestjs/config';
 import configuration from '../config/configuration';
+import { DateHelpers } from '../helpers/date-helpers';
 
 dayjs.extend(isBetween);
 
@@ -33,9 +34,20 @@ export class LoansService {
   private getCreateUpdateData(params: LoanDto | UpdateLoanDto, userId: string) {
     const { amount, borrower1, borrower2, startDate, terms } = params;
     const initialTerm = terms[0];
-    const { months, annualInterestRate } = initialTerm;
+    const { months, annualInterestRate, paymentAscConcepts } = initialTerm;
 
-    const coBorrower = borrower2.id ? borrower2 : undefined;
+    const coBorrower = borrower2?.id ? borrower2 : undefined;
+
+    const createdPaymentAscConcepts =
+      paymentAscConcepts?.reduce((accum, item) => {
+        return [
+          ...accum,
+          {
+            amount: item.amount,
+            concept: { connect: { id: item.concept.id } },
+          },
+        ];
+      }, []) ?? [];
 
     const monthlyRate =
       InterestCalculator.calculateMonthlyRate(annualInterestRate);
@@ -57,6 +69,9 @@ export class LoansService {
             monthlyAmount,
             monthlyRate,
             uinsert: { connect: { id: userId } },
+            paymentAscConcepts: {
+              create: createdPaymentAscConcepts,
+            },
           },
         ],
       },
@@ -108,6 +123,16 @@ export class LoansService {
             latePaymentFee: true,
             monthlyAmount: true,
             monthlyRate: true,
+            paymentAscConcepts: {
+              select: {
+                amount: true,
+                concept: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: {
             beginToApplyDate: 'desc',
@@ -186,6 +211,21 @@ export class LoansService {
           orderBy: {
             beginToApplyDate: 'asc',
           },
+          include: {
+            paymentAscConcepts: {
+              select: {
+                amount: true,
+                concept: {
+                  select: {
+                    id: true,
+                    name: true,
+                    conceptType: true,
+                    isToThirdParty: true,
+                  },
+                },
+              },
+            },
+          },
         },
         borrower1: true,
         transactions: {
@@ -210,13 +250,19 @@ export class LoansService {
 
     const { terms, amount, startDate } = loan;
     const term = terms[0];
-    const { months, monthlyRate, cutOffDay } = term;
+    const { months, monthlyRate, cutOffDay, paymentAscConcepts, paymentDay } =
+      term;
+
+    const totalPaymentAscConcepts = paymentAscConcepts.reduce((total, item) => {
+      return total + item.amount;
+    }, 0);
 
     const installments = InterestCalculator.projectInstallments(
       monthlyRate,
       months,
       amount,
       startDate,
+      paymentDay,
     );
 
     let initBalance = amount;
@@ -229,13 +275,17 @@ export class LoansService {
 
     const data = installments.reduce(
       (accum: API.ProjectionRow[], installment) => {
-        const initDate = dayjs(installment.date).date(cutOffDay + 1);
-        const finalDate = initDate.add(1, 'month').date(cutOffDay);
+        const [initDate, finalDate] = DateHelpers.getCutOffDates(
+          installment.date,
+          cutOffDay,
+        );
+
         const monthTransactions = transactions.filter((trn) =>
           dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
         );
 
-        let ideaPayment = installment.monthlyAmount + totalArrears;
+        const ideaPayment =
+          installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
 
         let isThereAPayment: boolean = false;
 
@@ -243,12 +293,12 @@ export class LoansService {
           (summarize, trn) => {
             const { concept } = trn;
             let credit = 0;
-            if (!concept.isToThirdParty) {
-              credit =
-                concept.conceptType === ConceptEnumType.CREDIT
-                  ? trn.amount
-                  : trn.amount * -1;
-            }
+            //if (!concept.isToThirdParty) {
+            credit =
+              concept.conceptType === ConceptEnumType.CREDIT
+                ? trn.amount
+                : trn.amount * -1;
+            //}
             if (concept.id === paymentConceptId) {
               isThereAPayment = true;
               lastPaymentDate = dayjs(trn.date);
@@ -264,20 +314,25 @@ export class LoansService {
         const appliedToInterest = initBalance * monthlyRate;
         const appliedToPrincipal =
           monthTransactions.length > 0
-            ? totalMonthTransactions - appliedToInterest
-            : ideaPayment - appliedToInterest;
+            ? totalMonthTransactions -
+              appliedToInterest -
+              totalPaymentAscConcepts
+            : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
         const endingBalance = initBalance - appliedToPrincipal;
 
         const row: API.ProjectionRow = {
-          date: initDate.format('MM/DD/YYYY'),
+          date: installment.date,
           initBalance,
           pastDueInstallments,
           lastPaymentDate: lastPaymentDate
             ? lastPaymentDate.format('MM/DD/YYYY')
             : '',
           ideaPayment:
-            totalArrears > 0 ? ideaPayment : installment.monthlyAmount,
+            totalArrears > 0
+              ? ideaPayment
+              : installment.monthlyAmount + totalPaymentAscConcepts,
           realPayment: totalMonthTransactions,
+          otherConcepts: totalPaymentAscConcepts,
           appliedToInterest,
           appliedToPrincipal,
           endingBalance,
@@ -308,6 +363,10 @@ export class LoansService {
     const projection = await this.projection(where);
     const loan = await this.findOne(where);
 
+    const { terms } = loan;
+
+    const term = terms[0];
+
     const currentStatement = projection.find((trn) =>
       dayjs(trn.date).isSame(date, 'month'),
     );
@@ -319,7 +378,7 @@ export class LoansService {
       );
     }
 
-    return StatementPDF.generate({ loan, projection, date });
+    return StatementPDF.generate({ loan, projection, date, term });
   }
 
   async getStatistics() {
@@ -348,13 +407,14 @@ export class LoansService {
     for (let loan of loans) {
       const { terms, amount, startDate } = loan;
       const term = terms[0];
-      const { months, monthlyRate } = term;
+      const { months, monthlyRate, paymentDay } = term;
 
       const installments = InterestCalculator.projectInstallments(
         monthlyRate,
         months,
         amount,
         startDate,
+        paymentDay,
       );
 
       const currentMonthPayment = installments.find((item) =>
@@ -439,12 +499,12 @@ export class LoansService {
 
   async batchRemove({ key }: { key: string[] }) {
     try {
-      return await this.prismaService.$transaction(async () => {
+      return await this.prismaService.$transaction(async (prisma) => {
         await key.reduce(async (antPromise, item) => {
           await antPromise;
           const loan = await this.findOne({ id: item });
 
-          await this.prismaService.term.deleteMany({
+          await prisma.term.deleteMany({
             where: {
               loanId: item,
             },

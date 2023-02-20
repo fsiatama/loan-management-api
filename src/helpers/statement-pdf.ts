@@ -3,10 +3,17 @@ import * as dayjs from 'dayjs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { STATEMENT_PDF_SCHEMAS } from './constants';
-import { Borrower, Concept, Loan, Term, Transaction } from '@prisma/client';
+import {
+  Borrower,
+  Concept,
+  Loan,
+  Term,
+  Transaction,
+  TermPaymentAssociatedConcepts,
+} from '@prisma/client';
+import { DateHelpers } from './date-helpers';
 
 type CurrentLoan = Loan & {
-  terms: Term[];
   borrower1: Borrower;
   transactions: (Transaction & {
     concept: Concept;
@@ -77,23 +84,39 @@ export class StatementPDF {
     loan,
     projection,
     date,
+    term,
   }: {
     loan: CurrentLoan;
     projection: API.ProjectionRow[];
     date: string;
+    term: Term & {
+      paymentAscConcepts: (Partial<TermPaymentAssociatedConcepts> & {
+        concept: Partial<Concept>;
+      })[];
+    };
   }) {
-    const { terms, amount, startDate, borrower1 } = loan;
-    const term = terms[0];
-    const { months, cutOffDay, annualInterestRate, paymentDay } = term;
+    const { amount, borrower1 } = loan;
 
-    const currentDate = dayjs(date).date(cutOffDay);
+    const {
+      months,
+      cutOffDay,
+      annualInterestRate,
+      paymentDay,
+      paymentAscConcepts,
+    } = term;
+
+    const [initDate, finalDate] = DateHelpers.getCutOffDates(date, cutOffDay);
+
+    const statementDate = initDate.add(1, 'day');
+
+    const currentDate = dayjs(date);
     const previousDate = currentDate.subtract(1, 'month').add(1, 'day');
     const nextPaymentDate = currentDate.date(paymentDay).format('MM/DD/YYYY');
 
-    const previousStatement = projection.find((trn) =>
+    const previousStatement: API.ProjectionRow = projection.find((trn) =>
       dayjs(trn.date).isSame(previousDate, 'month'),
     );
-    const currentStatement = projection.find((trn) =>
+    const currentStatement: API.ProjectionRow = projection.find((trn) =>
       dayjs(trn.date).isSame(currentDate, 'month'),
     );
 
@@ -104,6 +127,8 @@ export class StatementPDF {
       appliedToPrincipal: prevAppliedToPrincipal,
       appliedToInterest: prevAppliedToInterest,
       endingBalance: prevEndingBalance,
+      monthTransactions: prevMonthTransactions,
+      lastPaymentDate,
     } = previousStatement ?? {
       pastDueInstallments: 0,
       initBalance: amount,
@@ -111,6 +136,8 @@ export class StatementPDF {
       appliedToPrincipal: 0,
       appliedToInterest: 0,
       endingBalance: amount,
+      monthTransactions: [],
+      lastPaymentDate: '',
     };
     const {
       installment: installments,
@@ -119,7 +146,6 @@ export class StatementPDF {
       appliedToInterest: nextAppliedToInterest,
       ideaPayment: nextIdeaPayment,
       endingBalance: nextEndingBalance,
-      lastPaymentDate,
     } = currentStatement;
 
     const borrowers = `${borrower1.firstName} ${borrower1.lastName}`;
@@ -136,7 +162,25 @@ export class StatementPDF {
     const loanAmount = USDollar.format(amount);
     const interest = `${annualInterestRate}%`;
 
-    //console.log(borrower1.address.phone, borrowersPhone);
+    let initialIndex = 5;
+    const othersConcepts = paymentAscConcepts.reduce(
+      (obj: { [key: string]: string }, item) => {
+        obj[`concept${initialIndex}`] = item.concept?.name;
+        obj[`nextInst${initialIndex}`] = USDollar.format(item.amount);
+
+        const totalConceptPrevMonth = prevMonthTransactions
+          .filter((trn) => trn.concept.id === item.concept?.id)
+          .reduce((total, item) => {
+            return total + item.amount;
+          }, 0);
+
+        obj[`prevInst${initialIndex}`] = USDollar.format(totalConceptPrevMonth);
+        initialIndex += 1;
+
+        return obj;
+      },
+      {},
+    );
 
     const inputs = [
       {
@@ -161,13 +205,14 @@ export class StatementPDF {
         concept4: 'Interest',
         prevInst4: USDollar.format(prevAppliedToInterest),
         nextInst4: USDollar.format(nextAppliedToInterest),
-        concept10: 'Balance at the cut-off date',
-        prevInst10: USDollar.format(prevEndingBalance),
-        concept11: 'Amount to be paid',
-        nextInst11: USDollar.format(nextIdeaPayment),
-        concept12: 'Balance after this payment',
-        nextInst12: USDollar.format(nextEndingBalance),
-        statementDate: currentDate.format('MM/DD/YYYY'),
+        concept11: 'Balance at the cut-off date',
+        prevInst11: USDollar.format(prevEndingBalance),
+        concept12: 'Amount to be paid',
+        nextInst12: USDollar.format(nextIdeaPayment),
+        concept13: 'Balance after this payment',
+        nextInst13: USDollar.format(nextEndingBalance),
+        statementDate: statementDate.format('MM/DD/YYYY'),
+        ...othersConcepts,
       },
     ];
 
@@ -178,15 +223,21 @@ export class StatementPDF {
     loan,
     projection,
     date,
+    term,
   }: {
     loan: CurrentLoan;
     projection: API.ProjectionRow[];
     date: string;
+    term: Term & {
+      paymentAscConcepts: (Partial<TermPaymentAssociatedConcepts> & {
+        concept: Partial<Concept>;
+      })[];
+    };
   }) {
     const schemas = this.getSchemas();
     const template: Template = await this.getTemplate(schemas);
     const font = await this.getFont();
-    const inputs = this.getInputs({ loan, projection, date });
+    const inputs = this.getInputs({ loan, projection, date, term });
 
     const stream = await generate({ template, inputs, options: { font } });
     return stream;

@@ -1,5 +1,5 @@
 import { IsString, IsDefined, IsBoolean, IsIn, IsDate } from "class-validator";
-import { Transaction } from "./";
+import { Transaction, TermPaymentAssociatedConcepts } from "./";
 import { getEnumValues } from "../helpers";
 import { ConceptEnumType } from "../enums";
 
@@ -26,4 +26,7 @@ export class Concept {
 
     @IsDefined()
     transactions!: Transaction[];
+
+    @IsDefined()
+    paymentAscConcepts!: TermPaymentAssociatedConcepts[];
 }

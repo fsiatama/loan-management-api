@@ -13,15 +13,6 @@ export class Transaction {
     @IsDefined()
     amount!: number;
 
-    @IsDefined()
-    appliedToInterest!: number;
-
-    @IsDefined()
-    appliedToPrincipal!: number;
-
-    @IsDefined()
-    endingBalance!: number;
-
     @IsOptional()
     @IsString()
     description?: string;

@@ -101,9 +101,6 @@ model Transaction {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   date               DateTime
   amount             Float
-  appliedToInterest  Float
-  appliedToPrincipal Float
-  endingBalance      Float
   description        String?
   loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
   loanId             String   @db.ObjectId
@@ -121,6 +118,7 @@ model Concept {
   conceptType     ConceptEnumType @default(CREDIT)
   createdAt       DateTime        @default(now())
   transactions    Transaction[]
+  paymentAscConcepts TermPaymentAssociatedConcepts[]
 }
 
 model Term {
@@ -136,6 +134,16 @@ model Term {
   uinsert            User     @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
   uinsertId          String   @db.ObjectId
   createdAt          DateTime @default(now())
-  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
   loanId             String   @db.ObjectId
+  paymentAscConcepts TermPaymentAssociatedConcepts[]
+}
+
+model TermPaymentAssociatedConcepts {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount     Float
+  concept    Concept  @relation(fields: [conceptId], references: [id], onDelete: Restrict)
+  conceptId  String   @db.ObjectId
+  term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  termId     String   @db.ObjectId
 }

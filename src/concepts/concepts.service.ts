@@ -200,7 +200,10 @@ export class ConceptsService {
           const concept = await this.findOne({ id: item });
           if (concept.transactions.length > 0) {
             throw new HttpException(
-              `The borrower : ${concept.name}, has associated information and cannot be deleted.`,
+              {
+                status: HttpStatus.PRECONDITION_FAILED,
+                error: `The borrower : ${concept.name}, has associated information and cannot be deleted.`,
+              },
               HttpStatus.PRECONDITION_FAILED,
             );
           }

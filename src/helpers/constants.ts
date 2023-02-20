@@ -21,11 +21,12 @@ const concept = {
   type: 'text',
   width: 53.23,
   height: 7.38,
-  fontName: 'metropolis_regular',
+  fontName: 'metropolis_medium',
   alignment: 'left',
-  fontSize: 10,
+  fontSize: 9,
   characterSpacing: 0,
   lineHeight: 1,
+  fontColor: '#242b3a',
 };
 
 const subtitle = {
@@ -84,164 +85,176 @@ export const STATEMENT_PDF_SCHEMAS = [
       fontColor: '#ffffff',
     },
     nextInst1: {
-      position: { x: 160.37, y: 99.3 },
+      position: { x: 159.3, y: 101 },
       ...amount,
     },
     nextInst2: {
-      position: { x: 160.37, y: 108.17 },
+      position: { x: 159.3, y: 109.6 },
       ...amount,
     },
     nextInst3: {
-      position: { x: 160.37, y: 117.5 },
+      position: { x: 159.3, y: 119 },
       ...amount,
     },
     nextInst4: {
-      position: { x: 160.37, y: 127.01 },
+      position: { x: 159.3, y: 128.6 },
       ...amount,
     },
     nextInst5: {
-      position: { x: 160.37, y: 135.85 },
+      position: { x: 159.3, y: 137.6 },
       ...amount,
     },
     nextInst6: {
-      position: { x: 160.37, y: 145.22 },
+      position: { x: 159.3, y: 146.82 },
       ...amount,
     },
     nextInst7: {
-      position: { x: 160.37, y: 154.27 },
+      position: { x: 159.3, y: 156.04 },
       ...amount,
     },
     nextInst8: {
-      position: { x: 160.37, y: 163.27 },
+      position: { x: 159.3, y: 165.26 },
       ...amount,
     },
     nextInst9: {
-      position: { x: 160.37, y: 173.01 },
+      position: { x: 159.3, y: 174.48 },
       ...amount,
     },
     nextInst10: {
-      position: { x: 160.58, y: 182.22 },
+      position: { x: 159.3, y: 183.7 },
       ...amount,
     },
     nextInst11: {
-      position: { x: 160.26, y: 191.43 },
+      position: { x: 159.3, y: 192.92 },
       ...amount,
     },
     nextInst12: {
-      position: { x: 160.47, y: 201.17 },
+      position: { x: 159.3, y: 202.14 },
+      ...amount,
+    },
+    nextInst13: {
+      position: { x: 159.3, y: 211.36 },
       ...amount,
     },
     prevInst1: {
-      position: { x: 119.57, y: 99.3 },
+      position: { x: 119.57, y: 101 },
       ...amount,
     },
     prevInst2: {
-      position: { x: 119.57, y: 108.17 },
+      position: { x: 119.57, y: 109.6 },
       ...amount,
     },
     prevInst3: {
-      position: { x: 119.57, y: 117.5 },
+      position: { x: 119.57, y: 119 },
       ...amount,
     },
     prevInst4: {
-      position: { x: 119.57, y: 127.01 },
+      position: { x: 119.57, y: 128.6 },
       ...amount,
     },
     prevInst5: {
-      position: { x: 119.57, y: 135.85 },
+      position: { x: 119.57, y: 137.6 },
       ...amount,
     },
     prevInst6: {
-      position: { x: 119.57, y: 145.22 },
+      position: { x: 119.57, y: 146.82 },
       ...amount,
     },
     prevInst7: {
-      position: { x: 119.57, y: 154.27 },
+      position: { x: 119.57, y: 156.04 },
       ...amount,
     },
     prevInst8: {
-      position: { x: 119.57, y: 163.27 },
+      position: { x: 119.57, y: 165.26 },
       ...amount,
     },
     prevInst9: {
-      position: { x: 119.57, y: 173.01 },
+      position: { x: 119.57, y: 174.48 },
       ...amount,
     },
     prevInst10: {
-      position: { x: 119.78, y: 182.22 },
+      position: { x: 119.57, y: 183.7 },
       ...amount,
     },
     prevInst11: {
-      position: { x: 119.46, y: 191.43 },
+      position: { x: 119.57, y: 192.92 },
       ...amount,
     },
     prevInst12: {
-      position: { x: 119.67, y: 201.17 },
+      position: { x: 119.57, y: 202.14 },
+      ...amount,
+    },
+    prevInst13: {
+      position: { x: 119.57, y: 211.36 },
       ...amount,
     },
     concept1: {
-      position: { x: 63.69, y: 99.3 },
+      position: { x: 63.69, y: 101 },
       ...concept,
     },
     concept2: {
-      position: { x: 63.69, y: 108.17 },
+      position: { x: 63.69, y: 109.6 },
       ...concept,
     },
     concept3: {
-      position: { x: 63.69, y: 117.5 },
+      position: { x: 63.69, y: 119 },
       ...concept,
     },
     concept4: {
-      position: { x: 63.69, y: 127.01 },
+      position: { x: 63.69, y: 128.6 },
       ...concept,
     },
     concept5: {
-      position: { x: 63.69, y: 135.85 },
+      position: { x: 63.69, y: 137.6 },
       ...concept,
     },
     concept6: {
-      position: { x: 63.69, y: 145.22 },
+      position: { x: 63.69, y: 146.82 },
       ...concept,
     },
     concept7: {
-      position: { x: 63.69, y: 154.27 },
+      position: { x: 63.69, y: 156.04 },
       ...concept,
     },
     concept8: {
-      position: { x: 63.69, y: 163.27 },
+      position: { x: 63.69, y: 165.26 },
       ...concept,
     },
     concept9: {
-      position: { x: 63.69, y: 173.01 },
+      position: { x: 63.69, y: 174.48 },
       ...concept,
     },
     concept10: {
-      position: { x: 63.9, y: 182.22 },
+      position: { x: 63.69, y: 183.7 },
       ...concept,
     },
     concept11: {
-      position: { x: 63.58, y: 191.43 },
+      position: { x: 63.69, y: 192.92 },
       ...concept,
     },
     concept12: {
-      position: { x: 63.79, y: 201.17 },
+      position: { x: 63.69, y: 202.14 },
+      ...concept,
+    },
+    concept13: {
+      position: { x: 63.69, y: 211.36 },
       ...concept,
     },
     loanAmount: {
-      position: { x: 105.3, y: 51 },
+      position: { x: 99, y: 51 },
       ...titleAmount,
     },
     pastDue: {
-      position: { x: 105.3, y: 56 },
+      position: { x: 99, y: 56 },
       ...titleAmount,
     },
     totalInArreas: {
-      position: { x: 105.3, y: 61 },
+      position: { x: 99, y: 61 },
       fontColor: '#ed1c34',
       ...titleAmount,
     },
     interest: {
-      position: { x: 105.3, y: 66.7 },
+      position: { x: 99, y: 66.7 },
       ...titleAmount,
     },
     installments: {

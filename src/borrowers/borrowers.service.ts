@@ -246,8 +246,13 @@ export class BorrowersService {
             Loan_Loan_borrowerPrincipal.length > 0
           ) {
             throw new HttpException(
-              `The borrower : ${borrower.firstName} ${borrower.lastName}, has associated information and cannot be deleted.`,
+              'Delete Borrowers transaction failed',
               HttpStatus.PRECONDITION_FAILED,
+              {
+                cause: new Error(
+                  `The borrower : ${borrower.firstName} ${borrower.lastName}, has associated information and cannot be deleted.`,
+                ),
+              },
             );
           }
 

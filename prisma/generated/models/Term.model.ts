@@ -1,5 +1,5 @@
 import { IsString, IsDefined, IsInt, IsDate } from "class-validator";
-import { User, Loan } from "./";
+import { User, Loan, TermPaymentAssociatedConcepts } from "./";
 
 export class Term {
     @IsDefined()
@@ -51,4 +51,7 @@ export class Term {
     @IsDefined()
     @IsString()
     loanId!: string;
+
+    @IsDefined()
+    paymentAscConcepts!: TermPaymentAssociatedConcepts[];
 }

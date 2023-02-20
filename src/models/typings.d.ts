@@ -25,6 +25,7 @@ declare namespace API {
     pastDueInstallments: number;
     lastPaymentDate: string;
     ideaPayment: number;
+    otherConcepts: number;
     realPayment: number;
     appliedToInterest: number;
     appliedToPrincipal: number;

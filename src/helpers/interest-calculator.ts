@@ -22,8 +22,9 @@ export class InterestCalculator {
     months: number,
     principal: number,
     startDate: Date,
+    paymentDay: number,
   ) {
-    const initDate = dayjs(startDate).add(1, 'month');
+    const initDate = dayjs(startDate).add(1, 'month').date(paymentDay);
 
     const monthlyAmount = this.calculateMonthlyAmount(rate, months, principal);
     let date: string, toInterest: number, toPrincipal: number, ending: number;

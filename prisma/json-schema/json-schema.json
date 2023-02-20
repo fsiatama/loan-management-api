@@ -215,18 +215,6 @@
           "type": "number",
           "originalType": "Float"
         },
-        "appliedToInterest": {
-          "type": "number",
-          "originalType": "Float"
-        },
-        "appliedToPrincipal": {
-          "type": "number",
-          "originalType": "Float"
-        },
-        "endingBalance": {
-          "type": "number",
-          "originalType": "Float"
-        },
         "description": {
           "type": [
             "string",
@@ -264,9 +252,6 @@
       "required": [
         "date",
         "amount",
-        "appliedToInterest",
-        "appliedToPrincipal",
-        "endingBalance",
         "loanId",
         "uinsertId",
         "conceptId"
@@ -307,6 +292,13 @@
           "originalType": "Transaction",
           "items": {
             "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+          }
+        },
+        "paymentAscConcepts": {
+          "type": "array",
+          "originalType": "TermPaymentAssociatedConcepts",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
           }
         }
       },
@@ -372,6 +364,13 @@
         "loanId": {
           "type": "string",
           "originalType": "String"
+        },
+        "paymentAscConcepts": {
+          "type": "array",
+          "originalType": "TermPaymentAssociatedConcepts",
+          "items": {
+            "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
+          }
         }
       },
       "required": [
@@ -385,6 +384,38 @@
         "paymentDay",
         "uinsertId",
         "loanId"
+      ]
+    },
+    "TermPaymentAssociatedConcepts": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "amount": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "concept": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+        },
+        "conceptId": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "term": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Term"
+        },
+        "termId": {
+          "type": "string",
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "amount",
+        "conceptId",
+        "termId"
       ]
     },
     "Address": {
@@ -453,6 +484,9 @@
     },
     "term": {
       "$ref": "blue-phoenix-schema-id#/definitions/Term"
+    },
+    "termPaymentAssociatedConcepts": {
+      "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
     }
   }
 }

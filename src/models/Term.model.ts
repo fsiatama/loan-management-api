@@ -7,9 +7,13 @@ import {
   IsPositive,
   IsNumber,
   IsOptional,
+  IsArray,
+  ArrayMaxSize,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { TermPaymentAssociatedConcepts } from './TermPaymentAssociatedConcepts.model';
 
 export class Term {
   @IsDefined()
@@ -53,4 +57,12 @@ export class Term {
   @IsNumber()
   @ApiProperty()
   readonly monthlyRate: number;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @ArrayMaxSize(3)
+  @Type(() => TermPaymentAssociatedConcepts)
+  @ApiProperty({ type: () => TermPaymentAssociatedConcepts })
+  readonly paymentAscConcepts?: TermPaymentAssociatedConcepts[];
 }

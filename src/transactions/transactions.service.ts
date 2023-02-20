@@ -1,3 +1,4 @@
+import { ConfigType } from '@nestjs/config';
 import {
   HttpException,
   HttpStatus,
@@ -5,17 +6,21 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { Transaction, Prisma } from '@prisma/client';
+import { Transaction, Prisma, Concept } from '@prisma/client';
 import * as dayjs from 'dayjs';
 import { Transaction as TransactionDto } from '../models';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '../database/prisma.service';
 import { FilterTransactionDto } from './dto/filter-transaction.dto';
-import { LoansService } from 'src/loans/loans.service';
+import { LoansService } from '../loans/loans.service';
+import configuration from '../config/configuration';
+import { DateHelpers } from '../helpers/date-helpers';
 
 @Injectable()
 export class TransactionsService {
   constructor(
+    @Inject(configuration.KEY)
+    private configService: ConfigType<typeof configuration>,
     @Inject(forwardRef(() => LoansService))
     private loanService: LoansService,
     private prismaService: PrismaService,
@@ -30,9 +35,6 @@ export class TransactionsService {
     const data: Prisma.TransactionCreateInput = {
       amount,
       description,
-      appliedToInterest: 0,
-      appliedToPrincipal: 0,
-      endingBalance: 0,
       date,
       loan: { connect: { id: loan.id } },
       concept: { connect: concept },
@@ -42,53 +44,116 @@ export class TransactionsService {
     return data;
   }
 
+  private async getSumTransactionsByConceptAndMonth(
+    currentDate: string,
+    conceptId: string,
+    cutOffDay: number,
+    transactions: (Transaction & { concept: Concept })[],
+  ) {
+    const [initDate, finalDate] = DateHelpers.getCutOffDates(
+      currentDate,
+      cutOffDay,
+    );
+
+    return transactions
+      .filter((trn) =>
+        dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
+      )
+      .reduce((total, item) => {
+        return total + item.amount;
+      }, 0);
+
+    // console.log(currentDate, initDate.toISOString(), finalDate.toISOString());
+
+    /*return this.prismaService.transaction.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: {
+        concept: { id: conceptId },
+        date: {
+          gte: initDate.toISOString(),
+          lte: finalDate.toISOString(),
+        },
+      },
+    });*/
+  }
+
   async create(params: TransactionDto, userId: string) {
     try {
       const { loan: loanId, date, concept } = params;
       const loan = await this.loanService.findOne({ id: loanId.id });
-      const { transactions, terms, amount } = loan;
+      const { transactions, terms } = loan;
 
       const lastTerm = terms.pop();
-      const { monthlyRate } = lastTerm;
-      let [appliedToInterest, appliedToPrincipal, endingBalance] = [0, 0, 0];
-      const lastTransaction = transactions.pop();
+      const { paymentAscConcepts, cutOffDay } = lastTerm;
 
-      if (lastTransaction) {
-        const isBefore = dayjs(date).isBefore(lastTransaction.date, 'day');
-        if (isBefore) {
-          throw new HttpException(
-            'You are unable to create this transaction as there are already transactions for this loan with later dates',
-            HttpStatus.PRECONDITION_FAILED,
-          );
-        }
-        appliedToInterest = lastTransaction.endingBalance * monthlyRate;
-        appliedToPrincipal = params.amount - appliedToInterest;
-        endingBalance = lastTransaction.endingBalance - appliedToPrincipal;
-      } else {
-        appliedToInterest = amount * monthlyRate;
-        appliedToPrincipal = params.amount - appliedToInterest;
-        endingBalance = amount - appliedToPrincipal;
+      let transactionsToCreate = [];
+
+      const paymentConceptId = this.configService.coreBusiness.paymentConceptId;
+
+      let remainingAmount = params.amount;
+      if (concept.id === paymentConceptId) {
+        const othersTransactionsConcepts = await paymentAscConcepts.reduce(
+          async (accum, item) => {
+            const arrOthersConcepts = await accum;
+            const previousPayments =
+              await this.getSumTransactionsByConceptAndMonth(
+                date.toISOString(),
+                item.concept.id,
+                cutOffDay,
+                transactions,
+              );
+
+            if (previousPayments < item.amount) {
+              const ideaPayment = item.amount - previousPayments;
+              const splitAmount =
+                remainingAmount >= ideaPayment ? ideaPayment : remainingAmount;
+
+              if (remainingAmount > 0) {
+                const row: Prisma.TransactionCreateInput = {
+                  amount: splitAmount,
+                  description: `${item.concept.name} ${params.description}`,
+                  date,
+                  loan: { connect: { id: loan.id } },
+                  concept: { connect: { id: item.concept.id } },
+                  uinsert: { connect: { id: userId } },
+                };
+
+                remainingAmount -= splitAmount;
+
+                return [...arrOthersConcepts, row];
+              }
+            }
+            return [];
+          },
+          Promise.resolve([] as Prisma.TransactionCreateInput[]),
+        );
+
+        transactionsToCreate = othersTransactionsConcepts
+          ? [...othersTransactionsConcepts]
+          : [];
       }
-      const newTransaction: Prisma.TransactionCreateInput = {
-        amount: params.amount,
-        description: params.description,
-        date,
-        appliedToInterest,
-        appliedToPrincipal,
-        endingBalance,
-        loan: { connect: { id: loan.id } },
-        concept: { connect: concept },
-        uinsert: { connect: { id: userId } },
-      };
 
-      //return { monthlyRate, amount, newTransaction };
+      if (remainingAmount > 0) {
+        const newTransaction = {
+          amount: remainingAmount,
+          description: params.description,
+          date,
+          loan: { connect: { id: loan.id } },
+          concept: { connect: concept },
+          uinsert: { connect: { id: userId } },
+        };
+        transactionsToCreate.push(newTransaction);
+      }
 
       return await this.prismaService.$transaction(async (prisma) => {
-        //const data = this.getCreateUpdateData(newTransaction, userId);
-
-        return this.prismaService.transaction.create({
-          data: newTransaction,
-        });
+        await transactionsToCreate.reduce(async (prevPromise, item) => {
+          await prevPromise;
+          await this.prismaService.transaction.create({
+            data: item,
+          });
+        }, Promise.resolve());
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -112,9 +177,6 @@ export class TransactionsService {
         id: true,
         amount: true,
         date: true,
-        appliedToInterest: true,
-        appliedToPrincipal: true,
-        endingBalance: true,
         uinsert: {
           select: {
             name: true,
