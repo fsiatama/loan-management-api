@@ -128,6 +128,7 @@ export class StatementPDF {
       appliedToInterest: prevAppliedToInterest,
       endingBalance: prevEndingBalance,
       monthTransactions: prevMonthTransactions,
+      lateFee: prevLateFee,
       lastPaymentDate,
     } = previousStatement ?? {
       pastDueInstallments: 0,
@@ -142,11 +143,12 @@ export class StatementPDF {
     const {
       installment: installments,
       totalArrears: totalInArreas,
-      appliedToPrincipal: nextAppliedToPrincipal,
       appliedToInterest: nextAppliedToInterest,
       ideaPayment: nextIdeaPayment,
       endingBalance: nextEndingBalance,
     } = currentStatement;
+
+    const nextAppliedToPrincipal = nextIdeaPayment - nextAppliedToInterest;
 
     const borrowers = `${borrower1.firstName} ${borrower1.lastName}`;
     const borrowersStreet = `${borrower1.address.street}`;
@@ -163,6 +165,16 @@ export class StatementPDF {
     const interest = `${annualInterestRate}%`;
 
     let initialIndex = 5;
+    let lateFeeConcept = {};
+
+    if (prevLateFee > 0) {
+      initialIndex = 6;
+      lateFeeConcept = {
+        concept5red: 'Late fee for no payment',
+        prevInst5red: USDollar.format(prevLateFee),
+      };
+    }
+
     const othersConcepts = paymentAscConcepts.reduce(
       (obj: { [key: string]: string }, item) => {
         obj[`concept${initialIndex}`] = item.concept?.name;
@@ -213,6 +225,7 @@ export class StatementPDF {
         nextInst13: USDollar.format(nextEndingBalance),
         statementDate: statementDate.format('MM/DD/YYYY'),
         ...othersConcepts,
+        ...lateFeeConcept,
       },
     ];
 

@@ -276,6 +276,7 @@ export class LoansService {
     let lastPaymentDate: dayjs.Dayjs = null;
 
     const paymentConceptId = this.configService.coreBusiness.paymentConceptId;
+    const lateFeeConceptId = this.configService.coreBusiness.lateFeeConceptId;
 
     const data: API.ProjectionRow[] = [];
 
@@ -293,33 +294,42 @@ export class LoansService {
         installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
 
       let isThereAPayment: boolean = false;
+      let isThereALateFee: boolean = false;
+      let lateFee = 0;
 
-      const totalMonthTransactions = monthTransactions.reduce(
-        (summarize, trn) => {
-          const { concept } = trn;
-          let credit = 0;
-          //if (!concept.isToThirdParty) {
-          credit =
-            concept.conceptType === ConceptEnumType.CREDIT
-              ? trn.amount
-              : trn.amount * -1;
-          //}
-          if (concept.id === paymentConceptId) {
-            isThereAPayment = true;
-            lastPaymentDate = dayjs(trn.date);
+      const debits = monthTransactions
+        .filter((trn) => trn.concept.conceptType === ConceptEnumType.DEBIT)
+        .reduce((total, item) => {
+          if (item.concept.id === lateFeeConceptId) {
+            isThereALateFee = true;
           }
+          return total + item.amount;
+        }, 0);
 
-          return summarize + credit;
-        },
-        0,
-      );
+      if (isThereALateFee) {
+        lateFee = monthTransactions
+          .filter((trn) => trn.concept.id === lateFeeConceptId)
+          .reduce((total, item) => {
+            return total + item.amount;
+          }, 0);
+      }
+
+      const credits = monthTransactions
+        .filter((trn) => trn.concept.conceptType === ConceptEnumType.CREDIT)
+        .reduce((total, item) => {
+          if (item.concept.id === paymentConceptId) {
+            isThereAPayment = true;
+            lastPaymentDate = dayjs(item.date);
+          }
+          return total + item.amount;
+        }, 0);
 
       pastDueInstallments = isThereAPayment ? 0 : pastDueInstallments + 1;
 
       const appliedToInterest = initBalance * monthlyRate;
       const appliedToPrincipal =
         monthTransactions.length > 0
-          ? totalMonthTransactions - appliedToInterest - totalPaymentAscConcepts
+          ? credits - debits - appliedToInterest - totalPaymentAscConcepts
           : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
       const endingBalance = initBalance - appliedToPrincipal;
 
@@ -330,23 +340,20 @@ export class LoansService {
         lastPaymentDate: lastPaymentDate
           ? lastPaymentDate.format('MM/DD/YYYY')
           : '',
-        ideaPayment:
-          totalArrears > 0
-            ? ideaPayment
-            : installment.monthlyAmount + totalPaymentAscConcepts,
-        realPayment: totalMonthTransactions,
-        otherConcepts: totalPaymentAscConcepts,
+        ideaPayment,
+        realPayment: credits,
+        otherConcepts: totalPaymentAscConcepts - debits,
         appliedToInterest,
         appliedToPrincipal,
         endingBalance,
-        totalArrears:
-          totalArrears > 0 ? ideaPayment - installment.monthlyAmount : 0,
+        totalArrears,
+        lateFee,
         monthTransactions,
         installment: `${installmentsCount} of ${months}`,
       };
 
-      totalArrears =
-        monthTransactions.length > 0 ? ideaPayment - totalMonthTransactions : 0;
+      totalArrears = isThereAPayment ? 0 : totalArrears + debits;
+
       initBalance = endingBalance;
       installmentsCount += 1;
 
@@ -369,8 +376,6 @@ export class LoansService {
 
       data.push(row);
     }
-
-    // TODO: if endingBalance is greater than zero, i need add rows to proyection
 
     return data;
   }

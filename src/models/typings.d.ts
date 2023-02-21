@@ -31,6 +31,7 @@ declare namespace API {
     appliedToPrincipal: number;
     endingBalance: number;
     totalArrears: number;
+    lateFee: number;
     monthTransactions: (Transaction & { concept: Concept })[];
     installment: string;
   };

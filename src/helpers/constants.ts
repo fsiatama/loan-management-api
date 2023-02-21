@@ -17,6 +17,16 @@ const amount = {
   characterSpacing: 0,
   lineHeight: 1,
 };
+const amountRed = {
+  type: 'text',
+  width: 39.48,
+  height: 7.38,
+  alignment: 'right',
+  fontSize: 10,
+  characterSpacing: 0,
+  lineHeight: 1,
+  fontColor: '#ed1c34',
+};
 const concept = {
   type: 'text',
   width: 53.23,
@@ -27,6 +37,17 @@ const concept = {
   characterSpacing: 0,
   lineHeight: 1,
   fontColor: '#242b3a',
+};
+const conceptRed = {
+  type: 'text',
+  width: 53.23,
+  height: 7.38,
+  fontName: 'metropolis_medium',
+  alignment: 'left',
+  fontSize: 9,
+  characterSpacing: 0,
+  lineHeight: 1,
+  fontColor: '#ed1c34',
 };
 
 const subtitle = {
@@ -156,6 +177,10 @@ export const STATEMENT_PDF_SCHEMAS = [
       position: { x: 119.57, y: 137.6 },
       ...amount,
     },
+    prevInst5red: {
+      position: { x: 119.57, y: 137.6 },
+      ...amountRed,
+    },
     prevInst6: {
       position: { x: 119.57, y: 146.82 },
       ...amount,
@@ -207,6 +232,10 @@ export const STATEMENT_PDF_SCHEMAS = [
     concept5: {
       position: { x: 63.69, y: 137.6 },
       ...concept,
+    },
+    concept5red: {
+      position: { x: 63.69, y: 137.6 },
+      ...conceptRed,
     },
     concept6: {
       position: { x: 63.69, y: 146.82 },

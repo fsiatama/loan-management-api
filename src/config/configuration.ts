@@ -13,5 +13,6 @@ export default registerAs('config', () => ({
   },
   coreBusiness: {
     paymentConceptId: process.env.PAYMENT_CONCEPT_ID,
+    lateFeeConceptId: process.env.LATE_FEE_CONCEPT_ID,
   },
 }));
