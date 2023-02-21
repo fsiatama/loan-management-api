@@ -134,9 +134,6 @@ export class LoansService {
               },
             },
           },
-          orderBy: {
-            beginToApplyDate: 'desc',
-          },
         },
         borrower1: {
           select: {
@@ -156,6 +153,11 @@ export class LoansService {
             firstName: true,
             lastName: true,
           },
+        },
+      },
+      orderBy: {
+        borrower1: {
+          lastName: 'asc',
         },
       },
     };
@@ -227,6 +229,7 @@ export class LoansService {
             },
           },
         },
+        balance: true,
         borrower1: true,
         transactions: {
           include: { concept: true },
@@ -246,7 +249,8 @@ export class LoansService {
   async projection(where: Prisma.LoanWhereUniqueInput) {
     const loan = await this.findOne(where);
 
-    const { transactions } = loan;
+    const { transactions, balance } = loan;
+    // console.log(balance);
 
     const { terms, amount, startDate } = loan;
     const term = terms[0];
@@ -273,86 +277,98 @@ export class LoansService {
 
     const paymentConceptId = this.configService.coreBusiness.paymentConceptId;
 
-    const data = installments.reduce(
-      (accum: API.ProjectionRow[], installment) => {
-        const [initDate, finalDate] = DateHelpers.getCutOffDates(
-          installment.date,
-          cutOffDay,
-        );
+    const data: API.ProjectionRow[] = [];
 
-        const monthTransactions = transactions.filter((trn) =>
-          dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
-        );
+    for (const [currentIndex, installment] of installments.entries()) {
+      const [initDate, finalDate] = DateHelpers.getCutOffDates(
+        installment.date,
+        cutOffDay,
+      );
 
-        const ideaPayment =
-          installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
+      const monthTransactions = transactions.filter((trn) =>
+        dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
+      );
 
-        let isThereAPayment: boolean = false;
+      const ideaPayment =
+        installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
 
-        const totalMonthTransactions = monthTransactions.reduce(
-          (summarize, trn) => {
-            const { concept } = trn;
-            let credit = 0;
-            //if (!concept.isToThirdParty) {
-            credit =
-              concept.conceptType === ConceptEnumType.CREDIT
-                ? trn.amount
-                : trn.amount * -1;
-            //}
-            if (concept.id === paymentConceptId) {
-              isThereAPayment = true;
-              lastPaymentDate = dayjs(trn.date);
-            }
+      let isThereAPayment: boolean = false;
 
-            return summarize + credit;
-          },
-          0,
-        );
+      const totalMonthTransactions = monthTransactions.reduce(
+        (summarize, trn) => {
+          const { concept } = trn;
+          let credit = 0;
+          //if (!concept.isToThirdParty) {
+          credit =
+            concept.conceptType === ConceptEnumType.CREDIT
+              ? trn.amount
+              : trn.amount * -1;
+          //}
+          if (concept.id === paymentConceptId) {
+            isThereAPayment = true;
+            lastPaymentDate = dayjs(trn.date);
+          }
 
-        pastDueInstallments = isThereAPayment ? 0 : pastDueInstallments + 1;
+          return summarize + credit;
+        },
+        0,
+      );
 
-        const appliedToInterest = initBalance * monthlyRate;
-        const appliedToPrincipal =
-          monthTransactions.length > 0
-            ? totalMonthTransactions -
-              appliedToInterest -
-              totalPaymentAscConcepts
-            : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
-        const endingBalance = initBalance - appliedToPrincipal;
+      pastDueInstallments = isThereAPayment ? 0 : pastDueInstallments + 1;
 
-        const row: API.ProjectionRow = {
-          date: installment.date,
-          initBalance,
-          pastDueInstallments,
-          lastPaymentDate: lastPaymentDate
-            ? lastPaymentDate.format('MM/DD/YYYY')
-            : '',
-          ideaPayment:
-            totalArrears > 0
-              ? ideaPayment
-              : installment.monthlyAmount + totalPaymentAscConcepts,
-          realPayment: totalMonthTransactions,
-          otherConcepts: totalPaymentAscConcepts,
-          appliedToInterest,
-          appliedToPrincipal,
-          endingBalance,
-          totalArrears:
-            totalArrears > 0 ? ideaPayment - installment.monthlyAmount : 0,
-          monthTransactions,
-          installment: `${installmentsCount} of ${months}`,
+      const appliedToInterest = initBalance * monthlyRate;
+      const appliedToPrincipal =
+        monthTransactions.length > 0
+          ? totalMonthTransactions - appliedToInterest - totalPaymentAscConcepts
+          : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
+      const endingBalance = initBalance - appliedToPrincipal;
+
+      const row: API.ProjectionRow = {
+        date: installment.date,
+        initBalance,
+        pastDueInstallments,
+        lastPaymentDate: lastPaymentDate
+          ? lastPaymentDate.format('MM/DD/YYYY')
+          : '',
+        ideaPayment:
+          totalArrears > 0
+            ? ideaPayment
+            : installment.monthlyAmount + totalPaymentAscConcepts,
+        realPayment: totalMonthTransactions,
+        otherConcepts: totalPaymentAscConcepts,
+        appliedToInterest,
+        appliedToPrincipal,
+        endingBalance,
+        totalArrears:
+          totalArrears > 0 ? ideaPayment - installment.monthlyAmount : 0,
+        monthTransactions,
+        installment: `${installmentsCount} of ${months}`,
+      };
+
+      totalArrears =
+        monthTransactions.length > 0 ? ideaPayment - totalMonthTransactions : 0;
+      initBalance = endingBalance;
+      installmentsCount += 1;
+
+      if (currentIndex === installments.length - 1 && endingBalance > 0) {
+        const addedInstallmentDate = dayjs(installment.date)
+          .add(1, 'month')
+          .format('MM/DD/YYYY');
+
+        const addedInstallment: API.InstallmentRow = {
+          date: addedInstallmentDate,
+          beginning: 0,
+          ending: 0,
+          monthlyAmount: installment.monthlyAmount,
+          toInterest: 0,
+          toPrincipal: 0,
         };
 
-        totalArrears =
-          monthTransactions.length > 0
-            ? ideaPayment - totalMonthTransactions
-            : 0;
-        initBalance = endingBalance;
-        installmentsCount += 1;
+        installments.push(addedInstallment);
+      }
 
-        return [...accum, row];
-      },
-      [],
-    );
+      data.push(row);
+    }
 
     // TODO: if endingBalance is greater than zero, i need add rows to proyection
 
@@ -503,12 +519,6 @@ export class LoansService {
         await key.reduce(async (antPromise, item) => {
           await antPromise;
           const loan = await this.findOne({ id: item });
-
-          await prisma.term.deleteMany({
-            where: {
-              loanId: item,
-            },
-          });
 
           const { transactions } = loan;
           if (transactions.length > 0) {

@@ -1,5 +1,5 @@
 import { IsString, IsDefined, IsOptional, IsDate } from "class-validator";
-import { User, Borrower, Transaction, Term } from "./";
+import { User, Borrower, Transaction, Term, Balance } from "./";
 
 export class Loan {
     @IsDefined()
@@ -35,6 +35,9 @@ export class Loan {
 
     @IsDefined()
     terms!: Term[];
+
+    @IsOptional()
+    balance?: Balance;
 
     @IsDefined()
     @IsString()

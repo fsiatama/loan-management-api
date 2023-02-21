@@ -92,6 +92,7 @@ model Loan {
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
   terms        Term[]
+  balance      Balance?
   uinsertId    String        @db.ObjectId
   borrower1Id  String        @db.ObjectId
   borrower2Id  String?       @db.ObjectId
@@ -146,4 +147,16 @@ model TermPaymentAssociatedConcepts {
   conceptId  String   @db.ObjectId
   term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
   termId     String   @db.ObjectId
+}
+
+model Balance {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  date               DateTime
+  amountPaid         Float
+  amountInArrears    Float
+  amountThirdParty   Float
+  amountLateFee      Float
+  daysPastDue        Int
+  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  loanId             String   @db.ObjectId  @unique
 }

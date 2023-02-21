@@ -175,6 +175,17 @@
             "$ref": "blue-phoenix-schema-id#/definitions/Term"
           }
         },
+        "balance": {
+          "anyOf": [
+            {
+              "$ref": "blue-phoenix-schema-id#/definitions/Balance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "originalType": "Balance"
+        },
         "uinsertId": {
           "type": "string",
           "originalType": "String"
@@ -418,6 +429,56 @@
         "termId"
       ]
     },
+    "Balance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "date": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "amountPaid": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "amountInArrears": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "amountThirdParty": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "amountLateFee": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "daysPastDue": {
+          "type": "integer",
+          "originalType": "Int"
+        },
+        "loan": {
+          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+        },
+        "loanId": {
+          "type": "string",
+          "originalType": "String"
+        }
+      },
+      "required": [
+        "date",
+        "amountPaid",
+        "amountInArrears",
+        "amountThirdParty",
+        "amountLateFee",
+        "daysPastDue",
+        "loanId"
+      ]
+    },
     "Address": {
       "type": "object",
       "properties": {
@@ -487,6 +548,9 @@
     },
     "termPaymentAssociatedConcepts": {
       "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
+    },
+    "balance": {
+      "$ref": "blue-phoenix-schema-id#/definitions/Balance"
     }
   }
 }
