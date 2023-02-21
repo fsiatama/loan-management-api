@@ -53,9 +53,8 @@ const conceptRed = {
 const subtitle = {
   width: 48.23,
   height: 4.61,
-  fontName: 'metropolis_thin',
   alignment: 'left',
-  fontSize: 9,
+  fontSize: 8,
   characterSpacing: 0,
   lineHeight: 1,
   fontColor: '#ffffff',
