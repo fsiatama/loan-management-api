@@ -1,3 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { Prisma } from '@prisma/client';
 import {
   IsString,
   IsDefined,
@@ -8,8 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { MongoIdDto } from './';
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { type } from 'os';
 
 export class Transaction {
   @IsDefined()
@@ -40,3 +42,11 @@ export class Transaction {
   @ApiProperty({ type: () => MongoIdDto })
   readonly loan!: MongoIdDto;
 }
+
+const transactionWithConcept = Prisma.validator<Prisma.TransactionArgs>()({
+  include: { concept: true },
+});
+
+export type TransactionWithConcept = Prisma.TransactionGetPayload<
+  typeof transactionWithConcept
+>;

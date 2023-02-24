@@ -151,12 +151,15 @@ model TermPaymentAssociatedConcepts {
 
 model Balance {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  date               DateTime
   amountPaid         Float
+  amountToPrincipal  Float
+  amountToInterest   Float
   amountInArrears    Float
-  amountThirdParty   Float
   amountLateFee      Float
-  daysPastDue        Int
+  latePayments       Int
+  lastPaymentDate    DateTime?
+  installment        String
+  updatedAt          DateTime @updatedAt
   loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
   loanId             String   @db.ObjectId  @unique
 }

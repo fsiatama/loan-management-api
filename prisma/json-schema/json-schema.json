@@ -436,12 +436,15 @@
           "type": "string",
           "originalType": "String"
         },
-        "date": {
-          "type": "string",
-          "originalType": "DateTime",
-          "format": "date-time"
-        },
         "amountPaid": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "amountToPrincipal": {
+          "type": "number",
+          "originalType": "Float"
+        },
+        "amountToInterest": {
           "type": "number",
           "originalType": "Float"
         },
@@ -449,17 +452,30 @@
           "type": "number",
           "originalType": "Float"
         },
-        "amountThirdParty": {
-          "type": "number",
-          "originalType": "Float"
-        },
         "amountLateFee": {
           "type": "number",
           "originalType": "Float"
         },
-        "daysPastDue": {
+        "latePayments": {
           "type": "integer",
           "originalType": "Int"
+        },
+        "lastPaymentDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "originalType": "DateTime",
+          "format": "date-time"
+        },
+        "installment": {
+          "type": "string",
+          "originalType": "String"
+        },
+        "updatedAt": {
+          "type": "string",
+          "originalType": "DateTime",
+          "format": "date-time"
         },
         "loan": {
           "$ref": "blue-phoenix-schema-id#/definitions/Loan"
@@ -470,12 +486,14 @@
         }
       },
       "required": [
-        "date",
         "amountPaid",
+        "amountToPrincipal",
+        "amountToInterest",
         "amountInArrears",
-        "amountThirdParty",
         "amountLateFee",
-        "daysPastDue",
+        "latePayments",
+        "installment",
+        "updatedAt",
         "loanId"
       ]
     },

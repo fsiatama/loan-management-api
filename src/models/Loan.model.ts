@@ -15,6 +15,7 @@ import {
   ArrayMinSize,
 } from 'class-validator';
 import { Term, MongoIdDto } from './';
+import { Prisma } from '@prisma/client';
 
 export class Loan {
   @IsNotEmptyObject()
@@ -49,3 +50,32 @@ export class Loan {
   @ApiProperty({ type: () => Term })
   readonly terms: Term[];
 }
+
+const loanWithTerms = Prisma.validator<Prisma.LoanArgs>()({
+  include: {
+    terms: {
+      include: {
+        paymentAscConcepts: {
+          select: {
+            amount: true,
+            concept: {
+              select: {
+                id: true,
+                name: true,
+                conceptType: true,
+                isToThirdParty: true,
+              },
+            },
+          },
+        },
+      },
+    },
+    balance: true,
+    borrower1: true,
+    transactions: {
+      include: { concept: true },
+    },
+  },
+});
+
+export type LoanWithTerms = Prisma.LoanGetPayload<typeof loanWithTerms>;

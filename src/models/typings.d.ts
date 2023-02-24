@@ -28,7 +28,9 @@ declare namespace API {
     otherConcepts: number;
     realPayment: number;
     appliedToInterest: number;
+    realAppliedToInterest: number;
     appliedToPrincipal: number;
+    realAppliedToPrincipal: number;
     endingBalance: number;
     totalArrears: number;
     lateFee: number;

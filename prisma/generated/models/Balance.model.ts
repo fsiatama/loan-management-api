@@ -1,4 +1,4 @@
-import { IsString, IsDefined, IsDate, IsInt } from "class-validator";
+import { IsString, IsDefined, IsInt, IsDate, IsOptional } from "class-validator";
 import { Loan } from "./";
 
 export class Balance {
@@ -7,24 +7,35 @@ export class Balance {
     id!: string;
 
     @IsDefined()
-    @IsDate()
-    date!: Date;
-
-    @IsDefined()
     amountPaid!: number;
 
     @IsDefined()
-    amountInArrears!: number;
+    amountToPrincipal!: number;
 
     @IsDefined()
-    amountThirdParty!: number;
+    amountToInterest!: number;
+
+    @IsDefined()
+    amountInArrears!: number;
 
     @IsDefined()
     amountLateFee!: number;
 
     @IsDefined()
     @IsInt()
-    daysPastDue!: number;
+    latePayments!: number;
+
+    @IsOptional()
+    @IsDate()
+    lastPaymentDate?: Date;
+
+    @IsDefined()
+    @IsString()
+    installment!: string;
+
+    @IsDefined()
+    @IsDate()
+    updatedAt!: Date;
 
     @IsDefined()
     loan!: Loan;

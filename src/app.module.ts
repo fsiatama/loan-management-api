@@ -10,6 +10,7 @@ import { TermsModule } from './terms/terms.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BorrowersModule } from './borrowers/borrowers.module';
 import { ConceptsModule } from './concepts/concepts.module';
+import { BalanceModule } from './balance/balance.module';
 
 import configuration from './config/configuration';
 
@@ -27,6 +28,7 @@ import configuration from './config/configuration';
     TransactionsModule,
     BorrowersModule,
     ConceptsModule,
+    BalanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

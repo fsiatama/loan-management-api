@@ -1,18 +1,11 @@
 import * as dayjs from 'dayjs';
 import * as isBetween from 'dayjs/plugin/isBetween';
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  forwardRef,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Loan, Term, Prisma } from '@prisma/client';
 import { UpdateLoanDto } from './dto/update-loan.dto';
-import { FilterDto, Loan as LoanDto } from '../models';
+import { FilterDto, Loan as LoanDto, TransactionWithConcept } from '../models';
 import { PrismaService } from '../database/prisma.service';
 import { InterestCalculator } from '../helpers/interest-calculator';
-import { TransactionsService } from '../transactions/transactions.service';
 import { ConceptEnumType } from '../models/enums';
 import { StatementPDF } from 'src/helpers/statement-pdf';
 import { ConfigType } from '@nestjs/config';
@@ -26,8 +19,6 @@ export class LoansService {
   constructor(
     @Inject(configuration.KEY)
     private configService: ConfigType<typeof configuration>,
-    @Inject(forwardRef(() => TransactionsService))
-    private transactionsService: TransactionsService,
     private prismaService: PrismaService,
   ) {}
 
@@ -75,6 +66,7 @@ export class LoansService {
           },
         ],
       },
+
       borrower1: { connect: borrower1 },
       borrower2: { connect: coBorrower },
       uinsert: { connect: { id: userId } },
@@ -85,6 +77,20 @@ export class LoansService {
 
   create(params: LoanDto, userId: string) {
     const data = this.getCreateUpdateData(params, userId);
+    const { terms } = params;
+    const initialTerm = terms[0];
+    const { months } = initialTerm;
+    data.balance = {
+      create: {
+        amountPaid: 0,
+        amountToPrincipal: 0,
+        amountToInterest: 0,
+        amountInArrears: 0,
+        amountLateFee: 0,
+        latePayments: 0,
+        installment: `0 of ${months}`,
+      },
+    };
     return this.prismaService.loan.create({
       data,
     });
@@ -154,6 +160,7 @@ export class LoansService {
             lastName: true,
           },
         },
+        balance: true,
       },
       orderBy: {
         borrower1: {
@@ -246,11 +253,15 @@ export class LoansService {
     return loan;
   }
 
-  async projection(where: Prisma.LoanWhereUniqueInput) {
+  async projection(
+    where: Prisma.LoanWhereUniqueInput,
+    additionalTransactions: TransactionWithConcept[] = [],
+  ) {
     const loan = await this.findOne(where);
 
-    const { transactions, balance } = loan;
-    // console.log(balance);
+    const { transactions } = loan;
+
+    const allTransactions = [...transactions, ...additionalTransactions];
 
     const { terms, amount, startDate } = loan;
     const term = terms[0];
@@ -286,7 +297,7 @@ export class LoansService {
         cutOffDay,
       );
 
-      const monthTransactions = transactions.filter((trn) =>
+      const monthTransactions = allTransactions.filter((trn) =>
         dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
       );
 
@@ -294,25 +305,16 @@ export class LoansService {
         installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
 
       let isThereAPayment: boolean = false;
-      let isThereALateFee: boolean = false;
       let lateFee = 0;
 
       const debits = monthTransactions
         .filter((trn) => trn.concept.conceptType === ConceptEnumType.DEBIT)
         .reduce((total, item) => {
           if (item.concept.id === lateFeeConceptId) {
-            isThereALateFee = true;
+            lateFee += item.amount;
           }
           return total + item.amount;
         }, 0);
-
-      if (isThereALateFee) {
-        lateFee = monthTransactions
-          .filter((trn) => trn.concept.id === lateFeeConceptId)
-          .reduce((total, item) => {
-            return total + item.amount;
-          }, 0);
-      }
 
       const credits = monthTransactions
         .filter((trn) => trn.concept.conceptType === ConceptEnumType.CREDIT)
@@ -327,10 +329,16 @@ export class LoansService {
       pastDueInstallments = isThereAPayment ? 0 : pastDueInstallments + 1;
 
       const appliedToInterest = initBalance * monthlyRate;
+      const realAppliedToInterest =
+        monthTransactions.length > 0 ? initBalance * monthlyRate : 0;
       const appliedToPrincipal =
         monthTransactions.length > 0
           ? credits - debits - appliedToInterest - totalPaymentAscConcepts
           : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
+      const realAppliedToPrincipal =
+        monthTransactions.length > 0
+          ? credits - debits - appliedToInterest - totalPaymentAscConcepts
+          : 0;
       const endingBalance = initBalance - appliedToPrincipal;
 
       const row: API.ProjectionRow = {
@@ -344,7 +352,9 @@ export class LoansService {
         realPayment: credits,
         otherConcepts: totalPaymentAscConcepts - debits,
         appliedToInterest,
+        realAppliedToInterest,
         appliedToPrincipal,
+        realAppliedToPrincipal,
         endingBalance,
         totalArrears,
         lateFee,
