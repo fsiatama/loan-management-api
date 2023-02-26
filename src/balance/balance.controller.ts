@@ -7,7 +7,7 @@ export class BalanceController {
 
   @Get()
   findAll() {
-    return this.balanceService.findAll();
+    return this.balanceService.getStatistics();
   }
 
   @Get(':id')

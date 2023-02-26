@@ -33,6 +33,11 @@ export class TransactionsController {
     return this.transactionsService.findAll(params);
   }
 
+  @Get('/statistics')
+  getStatistics() {
+    return this.transactionsService.getStatistics();
+  }
+
   @Get(':id')
   findOne(@Param() urlParams: MongoIdDto) {
     return this.transactionsService.findOne({ id: urlParams.id });

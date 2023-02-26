@@ -352,6 +352,30 @@ export class TransactionsService {
     }
   }
 
+  async getStatistics() {
+    const data = await this.prismaService.transaction.findMany({
+      select: {
+        amount: true,
+        date: true,
+        concept: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return data.reduce((accum, item) => {
+      const { amount, date, concept } = item;
+      const row = {
+        amount,
+        date: date.toISOString(),
+        concept: concept.name,
+      };
+      return [...accum, row];
+    }, []);
+  }
+
   async findAll(params: FilterTransactionDto) {
     const { pageSize = 20, current = 1, name, loanId } = params;
 

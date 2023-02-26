@@ -1,5 +1,6 @@
 import * as dayjs from 'dayjs';
 import * as isBetween from 'dayjs/plugin/isBetween';
+import * as utc from 'dayjs/plugin/utc';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Loan, Term, Prisma } from '@prisma/client';
 import { UpdateLoanDto } from './dto/update-loan.dto';
@@ -13,6 +14,7 @@ import configuration from '../config/configuration';
 import { DateHelpers } from '../helpers/date-helpers';
 
 dayjs.extend(isBetween);
+dayjs.extend(utc);
 
 @Injectable()
 export class LoansService {
@@ -297,9 +299,14 @@ export class LoansService {
         cutOffDay,
       );
 
-      const monthTransactions = allTransactions.filter((trn) =>
-        dayjs(trn.date).isBetween(initDate, finalDate, 'day', '[)'),
-      );
+      const monthTransactions = allTransactions.filter((trn) => {
+        return DateHelpers.parse(trn.date).isBetween(
+          initDate,
+          finalDate,
+          'day',
+          '[]',
+        );
+      });
 
       const ideaPayment =
         installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
@@ -321,7 +328,7 @@ export class LoansService {
         .reduce((total, item) => {
           if (item.concept.id === paymentConceptId) {
             isThereAPayment = true;
-            lastPaymentDate = dayjs(item.date);
+            lastPaymentDate = DateHelpers.parse(item.date);
           }
           return total + item.amount;
         }, 0);
@@ -342,7 +349,9 @@ export class LoansService {
       const endingBalance = initBalance - appliedToPrincipal;
 
       const row: API.ProjectionRow = {
-        date: installment.date,
+        date: isThereAPayment
+          ? lastPaymentDate.format('MM/DD/YYYY')
+          : installment.date,
         initBalance,
         pastDueInstallments,
         lastPaymentDate: lastPaymentDate
@@ -368,7 +377,7 @@ export class LoansService {
       installmentsCount += 1;
 
       if (currentIndex === installments.length - 1 && endingBalance > 0) {
-        const addedInstallmentDate = dayjs(installment.date)
+        const addedInstallmentDate = DateHelpers.parse(installment.date)
           .add(1, 'month')
           .format('MM/DD/YYYY');
 
@@ -399,7 +408,7 @@ export class LoansService {
     const term = terms[0];
 
     const currentStatement = projection.find((trn) =>
-      dayjs(trn.date).isSame(date, 'month'),
+      DateHelpers.parse(trn.date).isSame(date, 'month'),
     );
 
     if (!currentStatement) {

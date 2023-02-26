@@ -7,6 +7,36 @@ import { PrismaService } from '../database/prisma.service';
 export class BalanceService {
   constructor(private prismaService: PrismaService) {}
 
+  async getStatistics() {
+    const balanceData = await this.prismaService.balance.aggregate({
+      _sum: {
+        amountPaid: true,
+        amountToPrincipal: true,
+        amountToInterest: true,
+        amountInArrears: true,
+        amountLateFee: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    const loansData = await this.prismaService.loan.aggregate({
+      _sum: {
+        amount: true,
+      },
+    });
+
+    const { _sum, _count } = balanceData;
+    const { _sum: loansSum } = loansData;
+
+    return {
+      ..._sum,
+      activeBorrowers: _count.id,
+      loansAmount: loansSum.amount,
+    };
+  }
+
   findAll() {
     return `This action returns all balance`;
   }

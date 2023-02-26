@@ -1,4 +1,4 @@
-import * as dayjs from 'dayjs';
+import { DateHelpers } from './date-helpers';
 
 export class InterestCalculator {
   static calculateMonthlyAmount(
@@ -24,7 +24,9 @@ export class InterestCalculator {
     startDate: Date,
     paymentDay: number,
   ) {
-    const initDate = dayjs(startDate).add(1, 'month').date(paymentDay);
+    const initDate = DateHelpers.parse(startDate)
+      .add(1, 'month')
+      .date(paymentDay);
 
     const monthlyAmount = this.calculateMonthlyAmount(rate, months, principal);
     let date: string, toInterest: number, toPrincipal: number, ending: number;

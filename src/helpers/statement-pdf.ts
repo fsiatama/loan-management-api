@@ -1,5 +1,4 @@
 import { Template, generate } from '@pdfme/generator';
-import * as dayjs from 'dayjs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { STATEMENT_PDF_SCHEMAS } from './constants';
@@ -109,15 +108,15 @@ export class StatementPDF {
 
     const statementDate = initDate.add(1, 'day');
 
-    const currentDate = dayjs(date);
+    const currentDate = DateHelpers.parse(date);
     const previousDate = currentDate.subtract(1, 'month').add(1, 'day');
     const nextPaymentDate = currentDate.date(paymentDay).format('MM/DD/YYYY');
 
     const previousStatement: API.ProjectionRow = projection.find((trn) =>
-      dayjs(trn.date).isSame(previousDate, 'month'),
+      DateHelpers.parse(trn.date).isSame(previousDate, 'month'),
     );
     const currentStatement: API.ProjectionRow = projection.find((trn) =>
-      dayjs(trn.date).isSame(currentDate, 'month'),
+      DateHelpers.parse(trn.date).isSame(currentDate, 'month'),
     );
 
     const {
