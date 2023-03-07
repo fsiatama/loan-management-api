@@ -6,8 +6,13 @@ export class BalanceController {
   constructor(private readonly balanceService: BalanceService) {}
 
   @Get()
-  findAll() {
+  getAccum() {
     return this.balanceService.getStatistics();
+  }
+
+  @Get('/detailed')
+  findAll() {
+    return this.balanceService.findAll();
   }
 
   @Get(':id')
