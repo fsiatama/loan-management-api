@@ -294,6 +294,10 @@ export class LoansService {
     const data: API.ProjectionRow[] = [];
 
     for (const [currentIndex, installment] of installments.entries()) {
+      if (initBalance <= 0) {
+        break;
+      }
+
       const [initDate, finalDate] = DateHelpers.getCutOffDates(
         installment.date,
         cutOffDay,
