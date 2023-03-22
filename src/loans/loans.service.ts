@@ -312,8 +312,13 @@ export class LoansService {
         );
       });
 
-      const ideaPayment =
+      let ideaPayment =
         installment.monthlyAmount + totalArrears + totalPaymentAscConcepts;
+
+      if (initBalance < ideaPayment) {
+        const lastPaymentInterest = initBalance * monthlyRate;
+        ideaPayment = initBalance + lastPaymentInterest;
+      }
 
       let isThereAPayment: boolean = false;
       let lateFee = 0;
