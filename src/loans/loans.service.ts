@@ -294,7 +294,7 @@ export class LoansService {
     const data: API.ProjectionRow[] = [];
 
     for (const [currentIndex, installment] of installments.entries()) {
-      if (initBalance <= 0) {
+      if (Math.round(initBalance) <= 0) {
         break;
       }
 
