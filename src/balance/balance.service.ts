@@ -69,14 +69,26 @@ export class BalanceService {
       const {
         lastPaymentDate,
         loan: { amount, borrower1, id },
-        ...rest
+        amountPaid,
+        amountToPrincipal,
+        amountToInterest,
+        amountInArrears,
+        amountLateFee,
+        installment,
       } = item;
       const row = {
-        ...rest,
-        lastPayment: DateHelpers.parse(lastPaymentDate).format('MM/YYYY'),
-        loanId: id,
-        borrower: `${borrower1.lastName} ${borrower1.firstName}`,
-        loanAmount: amount,
+        'AMOUNT PAID': amountPaid,
+        PRINCIPAL: amountToPrincipal,
+        INTEREST: amountToInterest,
+        'IN ARREARS': amountInArrears,
+        'LATE FEE': amountLateFee,
+        INSTALLMENT: installment,
+        'LAST PAYMENT DATE':
+          DateHelpers.parse(lastPaymentDate).format('MM/YYYY'),
+        'LOAN ID': id,
+        BORROWER: `${borrower1.lastName} ${borrower1.firstName}`,
+        'LOAN AMOUNT': amount,
+        BALANCE: amount - amountToPrincipal,
       };
       return [...accum, row];
     }, []);

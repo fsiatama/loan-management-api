@@ -17,6 +17,16 @@ const amount = {
   characterSpacing: 0,
   lineHeight: 1,
 };
+const amountBold = {
+  type: 'text',
+  width: 39.48,
+  height: 7.38,
+  fontName: 'metropolis_medium',
+  alignment: 'right',
+  fontSize: 10,
+  characterSpacing: 0,
+  lineHeight: 1,
+};
 const amountRed = {
   type: 'text',
   width: 39.48,
@@ -150,7 +160,7 @@ export const STATEMENT_PDF_SCHEMAS = [
     },
     nextInst12: {
       position: { x: 159.3, y: 202.14 },
-      ...amount,
+      ...amountBold,
     },
     nextInst13: {
       position: { x: 159.3, y: 211.36 },
@@ -202,7 +212,7 @@ export const STATEMENT_PDF_SCHEMAS = [
     },
     prevInst11: {
       position: { x: 119.57, y: 192.92 },
-      ...amount,
+      ...amountBold,
     },
     prevInst12: {
       position: { x: 119.57, y: 202.14 },
