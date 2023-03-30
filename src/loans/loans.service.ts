@@ -99,7 +99,9 @@ export class LoansService {
   }
 
   async findAll(params?: FilterDto) {
-    const { pageSize = 20, current = 1, name } = params;
+    const { pageSize = 20, current = 1, name, sort } = params;
+
+    const sorter = sort ? JSON.parse(sort) : {};
 
     const options: {
       skip?: number;
@@ -164,12 +166,43 @@ export class LoansService {
         },
         balance: true,
       },
-      orderBy: {
-        borrower1: {
-          lastName: 'asc',
-        },
+    };
+
+    options.orderBy = {
+      borrower1: {
+        lastName: 'asc',
       },
     };
+
+    if (Object.keys(sorter).length > 0) {
+      Object.keys(sorter).forEach((key) => {
+        const direction = sorter[key] === 'descend' ? 'desc' : 'asc';
+        switch (key) {
+          case 'balance,lastPaymentDate':
+            options.orderBy = {
+              balance: {
+                lastPaymentDate: direction,
+              },
+            };
+            break;
+          case 'borrower1,firstName':
+            options.orderBy = {
+              borrower1: {
+                lastName: direction,
+              },
+            };
+            break;
+          case 'amount':
+            options.orderBy = {
+              amount: direction,
+            };
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
 
     if (name) {
       options.where = {

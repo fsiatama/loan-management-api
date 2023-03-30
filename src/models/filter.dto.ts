@@ -18,6 +18,9 @@ export class FilterDto {
   @IsOptional()
   @IsString()
   readonly name: string;
+
+  @IsOptional()
+  sort: string;
 }
 
 export class MongoIdDto {
