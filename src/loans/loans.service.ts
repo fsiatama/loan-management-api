@@ -325,6 +325,7 @@ export class LoansService {
     const lateFeeConceptId = this.configService.coreBusiness.lateFeeConceptId;
 
     const data: API.ProjectionRow[] = [];
+    let isAdditionalInstallment: boolean = false;
 
     for (const [currentIndex, installment] of installments.entries()) {
       if (Math.round(initBalance) <= 0) {
@@ -384,6 +385,11 @@ export class LoansService {
         monthTransactions.length > 0
           ? credits - debits - appliedToInterest - totalPaymentAscConcepts
           : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
+
+      if (Math.round(appliedToPrincipal) <= 0 && isAdditionalInstallment) {
+        break;
+      }
+
       const realAppliedToPrincipal =
         monthTransactions.length > 0
           ? credits - debits - appliedToInterest - totalPaymentAscConcepts
@@ -431,6 +437,8 @@ export class LoansService {
           toInterest: 0,
           toPrincipal: 0,
         };
+
+        isAdditionalInstallment = true;
 
         installments.push(addedInstallment);
       }
