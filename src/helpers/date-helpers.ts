@@ -24,4 +24,9 @@ export class DateHelpers {
 
     return [initDate, finalDate];
   }
+
+  static getLastOfMonth(dateString: string): string {
+    const date = this.parse(dateString);
+    return date.endOf('month').format('MM/DD/YYYY');
+  }
 }

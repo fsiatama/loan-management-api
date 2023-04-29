@@ -139,13 +139,19 @@ export class StatementPDF {
       monthTransactions: [],
       lastPaymentDate: '',
     };
-    const {
+    let {
       installment: installments,
       totalArrears: totalInArreas,
       appliedToInterest: nextAppliedToInterest,
       ideaPayment: nextIdeaPayment,
       endingBalance: nextEndingBalance,
     } = currentStatement;
+
+    if (Math.round(nextEndingBalance) <= 0) {
+      nextIdeaPayment = 0;
+      nextEndingBalance = 0;
+      nextAppliedToInterest = 0;
+    }
 
     const nextAppliedToPrincipal = nextIdeaPayment - nextAppliedToInterest;
 

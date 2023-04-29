@@ -386,15 +386,19 @@ export class LoansService {
           ? credits - debits - appliedToInterest - totalPaymentAscConcepts
           : ideaPayment - appliedToInterest - totalPaymentAscConcepts;
 
-      if (Math.round(appliedToPrincipal) <= 0 && isAdditionalInstallment) {
-        break;
-      }
-
       const realAppliedToPrincipal =
         monthTransactions.length > 0
           ? credits - debits - appliedToInterest - totalPaymentAscConcepts
           : 0;
       const endingBalance = initBalance - appliedToPrincipal;
+
+      if (
+        Math.round(appliedToPrincipal) <= 0 &&
+        isAdditionalInstallment &&
+        Math.round(totalPaymentAscConcepts) > 0
+      ) {
+        break;
+      }
 
       const row: API.ProjectionRow = {
         date: isThereAPayment
@@ -423,6 +427,8 @@ export class LoansService {
 
       initBalance = endingBalance;
       installmentsCount += 1;
+
+      //console.log(endingBalance);
 
       if (currentIndex === installments.length - 1 && endingBalance > 0) {
         const addedInstallmentDate = DateHelpers.parse(installment.date)
@@ -457,8 +463,10 @@ export class LoansService {
 
     const term = terms[0];
 
+    const dateLastOfMonth = DateHelpers.getLastOfMonth(date);
+
     const currentStatement = projection.find((trn) =>
-      DateHelpers.parse(trn.date).isSame(date, 'month'),
+      DateHelpers.parse(trn.date).isSame(dateLastOfMonth, 'month'),
     );
 
     if (!currentStatement) {
@@ -468,7 +476,12 @@ export class LoansService {
       );
     }
 
-    return StatementPDF.generate({ loan, projection, date, term });
+    return StatementPDF.generate({
+      loan,
+      projection,
+      date: dateLastOfMonth,
+      term,
+    });
   }
 
   async getStatistics() {
