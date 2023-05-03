@@ -74,7 +74,7 @@ export class LoansController {
   @Patch(':id')
   update(
     @Param() urlParams: MongoIdDto,
-    @Body() updateLoanDto: UpdateLoanDto,
+    @Body() updateLoanDto: Loan,
     @Request() req,
   ) {
     const { sub } = req.user;

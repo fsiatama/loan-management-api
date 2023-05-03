@@ -30,32 +30,29 @@ export class StatementPDF {
         data: readFileSync(
           join(
             __dirname,
-            '../../../',
+            '../../',
             'static/pdf-templates/fonts/Metropolis-Thin.otf',
           ),
         ),
         fallback: true,
-        subset: false,
       },
       metropolis_medium: {
         data: readFileSync(
           join(
             __dirname,
-            '../../../',
+            '../../',
             'static/pdf-templates/fonts/Metropolis-Medium.otf',
           ),
         ),
-        subset: false,
       },
       metropolis_regular: {
         data: readFileSync(
           join(
             __dirname,
-            '../../../',
+            '../../',
             'static/pdf-templates/fonts/Metropolis-Regular.otf',
           ),
         ),
-        subset: false,
       },
     };
     return font;
@@ -63,11 +60,7 @@ export class StatementPDF {
 
   private static async getTemplate(schemas) {
     const data = readFileSync(
-      join(
-        __dirname,
-        '../../../',
-        'static/pdf-templates/statement-template.pdf',
-      ),
+      join(__dirname, '../../', 'static/pdf-templates/statement-template.pdf'),
     );
     const buff = Buffer.from(data);
     const base64pdf = 'data:application/pdf;base64,' + buff.toString('base64');
@@ -109,7 +102,7 @@ export class StatementPDF {
     const statementDate = initDate.add(1, 'day');
 
     const currentDate = DateHelpers.parse(date);
-    const previousDate = currentDate.subtract(1, 'month').add(1, 'day');
+    const previousDate = currentDate.subtract(1, 'month');
     const nextPaymentDate = currentDate.date(paymentDay).format('MM/DD/YYYY');
 
     const previousStatement: API.ProjectionRow = projection.find((trn) =>
@@ -139,6 +132,8 @@ export class StatementPDF {
       monthTransactions: [],
       lastPaymentDate: '',
     };
+    //console.log(previousStatement);
+
     let {
       installment: installments,
       totalArrears: totalInArreas,

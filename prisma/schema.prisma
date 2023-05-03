@@ -18,24 +18,6 @@ generator erd {
   provider = "prisma-erd-generator"
 }
 
-generator class_validator  {
-  provider = "prisma-class-validator-generator"
-}
-
-// generator nestjsDto {
-//   provider                        = "prisma-generator-nestjs-dto"
-//   output                          = "./generated/nestjs-dto"
-//   outputToNestJsResourceStructure = "true"
-//   exportRelationModifierClasses   = "true"
-//   reExport                        = "false"
-//   createDtoPrefix                 = "Create"
-//   updateDtoPrefix                 = "Update"
-//   dtoSuffix                       = "Dto"
-//   entityPrefix                    = ""
-//   entitySuffix                    = ""
-//   fileNamingStyle                 = "camel"
-// }
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")

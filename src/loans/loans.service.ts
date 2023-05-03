@@ -4,7 +4,12 @@ import * as utc from 'dayjs/plugin/utc';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Loan, Term, Prisma } from '@prisma/client';
 import { UpdateLoanDto } from './dto/update-loan.dto';
-import { FilterDto, Loan as LoanDto, TransactionWithConcept } from '../models';
+import {
+  FilterDto,
+  Loan as LoanDto,
+  MongoIdDto,
+  TransactionWithConcept,
+} from '../models';
 import { PrismaService } from '../database/prisma.service';
 import { InterestCalculator } from '../helpers/interest-calculator';
 import { ConceptEnumType } from '../models/enums';
@@ -16,6 +21,8 @@ import { DateHelpers } from '../helpers/date-helpers';
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
+type LoanUpdateProperties = LoanDto & UpdateLoanDto;
+
 @Injectable()
 export class LoansService {
   constructor(
@@ -24,14 +31,14 @@ export class LoansService {
     private prismaService: PrismaService,
   ) {}
 
-  private getCreateUpdateData(params: LoanDto | UpdateLoanDto, userId: string) {
+  private getCreateUpdateData(params: LoanUpdateProperties, userId: string) {
     const { amount, borrower1, borrower2, startDate, terms } = params;
     const initialTerm = terms[0];
     const { months, annualInterestRate, paymentAscConcepts } = initialTerm;
 
     const coBorrower = borrower2?.id ? borrower2 : undefined;
 
-    const createdPaymentAscConcepts =
+    const formattedPaymentAscConcepts =
       paymentAscConcepts?.reduce((accum, item) => {
         return [
           ...accum,
@@ -44,14 +51,13 @@ export class LoansService {
 
     const monthlyRate =
       InterestCalculator.calculateMonthlyRate(annualInterestRate);
-
     const monthlyAmount = InterestCalculator.calculateMonthlyAmount(
       monthlyRate,
       months,
       amount,
     );
 
-    const data: Prisma.LoanCreateInput = {
+    const inputData: Prisma.LoanCreateInput = {
       amount,
       startDate,
       terms: {
@@ -63,7 +69,7 @@ export class LoansService {
             monthlyRate,
             uinsert: { connect: { id: userId } },
             paymentAscConcepts: {
-              create: createdPaymentAscConcepts,
+              create: formattedPaymentAscConcepts,
             },
           },
         ],
@@ -74,7 +80,7 @@ export class LoansService {
       uinsert: { connect: { id: userId } },
     };
 
-    return data;
+    return inputData;
   }
 
   create(params: LoanDto, userId: string) {
@@ -550,26 +556,11 @@ export class LoansService {
         unit: '$',
       },
     ];
-
-    const statistics = loans.reduce(
-      (accum: API.ComparativeStatistic[], loan: LoanType) => {
-        const statistic: API.ComparativeStatistic = {
-          id: 1,
-          value: 45,
-          prevValue: 30,
-          unit: 'kg',
-        };
-        return [...accum, statistic];
-      },
-      [],
-    );
-
-    return statistics;
   }
 
   async update(params: {
     where: Prisma.LoanWhereUniqueInput;
-    data: UpdateLoanDto;
+    data: LoanDto;
     userId: string;
   }) {
     const { data, where, userId } = params;
