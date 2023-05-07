@@ -7,13 +7,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY static ./static/
+COPY src ./src/
+COPY tsconfig*.json ./
 
-# Install app dependencies
-RUN npm install
-
-COPY . .
-
-RUN npm run build
+RUN npm install \
+    && npm run build \
+    && npm prune --production
 
 FROM node:18
 

@@ -30,7 +30,7 @@ export class StatementPDF {
         data: readFileSync(
           join(
             __dirname,
-            '../../',
+            '../../../',
             'static/pdf-templates/fonts/Metropolis-Thin.otf',
           ),
         ),
@@ -40,7 +40,7 @@ export class StatementPDF {
         data: readFileSync(
           join(
             __dirname,
-            '../../',
+            '../../../',
             'static/pdf-templates/fonts/Metropolis-Medium.otf',
           ),
         ),
@@ -49,7 +49,7 @@ export class StatementPDF {
         data: readFileSync(
           join(
             __dirname,
-            '../../',
+            '../../../',
             'static/pdf-templates/fonts/Metropolis-Regular.otf',
           ),
         ),
@@ -60,7 +60,11 @@ export class StatementPDF {
 
   private static async getTemplate(schemas) {
     const data = readFileSync(
-      join(__dirname, '../../', 'static/pdf-templates/statement-template.pdf'),
+      join(
+        __dirname,
+        '../../../',
+        'static/pdf-templates/statement-template.pdf',
+      ),
     );
     const buff = Buffer.from(data);
     const base64pdf = 'data:application/pdf;base64,' + buff.toString('base64');
