@@ -1,36 +1,47 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Loan Management API
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The loan-management-api is a backend API developed with NestJS, Prisma and MongoDB for managing loans. It is an integral part of a larger loan management system that also includes a user-friendly frontend interface (loan-management-ui) and a configuration repository for deployment (loan-management-deployment).
 
-## Installation
+## Features
+
+This API is responsible for the following features:
+
+- User management: This allows users to access the platform.
+- Borrower management: Manages all information related to the borrowers.
+- Loan management: Handles loan-related information.
+- Payment tracking: Keeps track of all loan payments.
+- PDF Statement generation: Provides detailed PDF statements for loan transactions.
+- Concept management: Manages different transaction concepts.
+- Payment history: Provides a detailed history of all loan payments.
+- Loan payment projection: Provides future projections for loan payments.
+- Overdue information: Provides information about overdue days for a loan.
+- Dashboard: Presents monthly statistics of income, defaulting borrowers, and income per each configured concept.
+
+## Getting Started
+
+Clone the repository:
+```bash
+$ git clone https://github.com/{your_username}/loan-management-api.git
+$ cd loan-management-api
+```
+
+Install the dependencies:
 
 ```bash
 $ npm install
 ```
+
+To sync Prisma with MongoDB, run:
+
+```bash
+$ npm run prisma:migrate
+```
+
+## Database Configuration
+
+You will need to set up a MongoDB Cloud account, create a database, and configure the DATABASE_URL environment variable with your MongoDB connection string.
 
 ## Running the app
 
@@ -45,29 +56,19 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
 
-```bash
-# unit tests
-$ npm run test
 
-# e2e tests
-$ npm run test:e2e
+## Deployment
 
-# test coverage
-$ npm run test:cov
-```
+Refer to the [loan-management-deployment](https://github.com/fsiatama/loan-management-deployment.git) repository for instructions on how to deploy the entire platform, including this backend API.
 
-## Support
+## Related Repositories
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- [loan-management-deployment:](https://github.com/fsiatama/loan-management-deployment.git)  Contains the Docker Compose and Nginx configurations needed for deploying the loan management system.
+- [loan-management-ui:](https://github.com/fsiatama/loan-management-ui.git) The frontend user interface for the loan management system.
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+For any additional information or queries, feel free to open an issue.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the terms of the MIT license. See the [MIT licensed](LICENSE) file for license rights and limitations.
