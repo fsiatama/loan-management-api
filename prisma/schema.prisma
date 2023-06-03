@@ -2,16 +2,16 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider                 = "prisma-json-schema-generator"
   keepRelationScalarFields = "true"
-  schemaId = "blue-phoenix-schema-id"
-  includeRequiredFields = "true"
-  persistOriginalType = "true"
+  schemaId                 = "loan-management-schema-id"
+  includeRequiredFields    = "true"
+  persistOriginalType      = "true"
 }
 
 generator erd {
@@ -81,31 +81,31 @@ model Loan {
 }
 
 model Transaction {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  date               DateTime
-  amount             Float
-  description        String?
-  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
-  loanId             String   @db.ObjectId
-  uinsert            User     @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
-  uinsertId          String   @db.ObjectId
-  createdAt          DateTime @default(now())
-  concept            Concept  @relation(fields: [conceptId], references: [id], onDelete: Restrict)
-  conceptId          String   @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  date        DateTime
+  amount      Float
+  description String?
+  loan        Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  loanId      String   @db.ObjectId
+  uinsert     User     @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
+  uinsertId   String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  concept     Concept  @relation(fields: [conceptId], references: [id], onDelete: Restrict)
+  conceptId   String   @db.ObjectId
 }
 
 model Concept {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  name            String          @unique
-  isToThirdParty  Boolean         @default(false)
-  conceptType     ConceptEnumType @default(CREDIT)
-  createdAt       DateTime        @default(now())
-  transactions    Transaction[]
+  id                 String                          @id @default(auto()) @map("_id") @db.ObjectId
+  name               String                          @unique
+  isToThirdParty     Boolean                         @default(false)
+  conceptType        ConceptEnumType                 @default(CREDIT)
+  createdAt          DateTime                        @default(now())
+  transactions       Transaction[]
   paymentAscConcepts TermPaymentAssociatedConcepts[]
 }
 
 model Term {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String                          @id @default(auto()) @map("_id") @db.ObjectId
   months             Int
   monthlyRate        Float
   annualInterestRate Float
@@ -114,34 +114,34 @@ model Term {
   beginToApplyDate   DateTime
   cutOffDay          Int
   paymentDay         Int
-  uinsert            User     @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
-  uinsertId          String   @db.ObjectId
-  createdAt          DateTime @default(now())
-  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  loanId             String   @db.ObjectId
+  uinsert            User                            @relation(fields: [uinsertId], references: [id], onDelete: Restrict)
+  uinsertId          String                          @db.ObjectId
+  createdAt          DateTime                        @default(now())
+  loan               Loan                            @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId             String                          @db.ObjectId
   paymentAscConcepts TermPaymentAssociatedConcepts[]
 }
 
 model TermPaymentAssociatedConcepts {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  amount     Float
-  concept    Concept  @relation(fields: [conceptId], references: [id], onDelete: Restrict)
-  conceptId  String   @db.ObjectId
-  term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
-  termId     String   @db.ObjectId
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  amount    Float
+  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Restrict)
+  conceptId String  @db.ObjectId
+  term      Term    @relation(fields: [termId], references: [id], onDelete: Cascade)
+  termId    String  @db.ObjectId
 }
 
 model Balance {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  amountPaid         Float
-  amountToPrincipal  Float
-  amountToInterest   Float
-  amountInArrears    Float
-  amountLateFee      Float
-  latePayments       Int
-  lastPaymentDate    DateTime?
-  installment        String
-  updatedAt          DateTime @updatedAt
-  loan               Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
-  loanId             String   @db.ObjectId  @unique
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  amountPaid        Float
+  amountToPrincipal Float
+  amountToInterest  Float
+  amountInArrears   Float
+  amountLateFee     Float
+  latePayments      Int
+  lastPaymentDate   DateTime?
+  installment       String
+  updatedAt         DateTime  @updatedAt
+  loan              Loan      @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  loanId            String    @unique @db.ObjectId
 }

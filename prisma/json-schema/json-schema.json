@@ -1,5 +1,5 @@
 {
-  "$id": "blue-phoenix-schema-id",
+  "$id": "loan-management-schema-id",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "User": {
@@ -25,28 +25,28 @@
           "type": "array",
           "originalType": "Borrower",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+            "$ref": "loan-management-schema-id#/definitions/Borrower"
           }
         },
         "Loan": {
           "type": "array",
           "originalType": "Loan",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+            "$ref": "loan-management-schema-id#/definitions/Loan"
           }
         },
         "Transaction": {
           "type": "array",
           "originalType": "Transaction",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+            "$ref": "loan-management-schema-id#/definitions/Transaction"
           }
         },
         "Term": {
           "type": "array",
           "originalType": "Term",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Term"
+            "$ref": "loan-management-schema-id#/definitions/Term"
           }
         }
       },
@@ -76,10 +76,10 @@
           "originalType": "String"
         },
         "address": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Address"
+          "$ref": "loan-management-schema-id#/definitions/Address"
         },
         "uinsert": {
-          "$ref": "blue-phoenix-schema-id#/definitions/User"
+          "$ref": "loan-management-schema-id#/definitions/User"
         },
         "uinsertId": {
           "type": "string",
@@ -99,14 +99,14 @@
           "type": "array",
           "originalType": "Loan",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+            "$ref": "loan-management-schema-id#/definitions/Loan"
           }
         },
         "Loan_Loan_coBorrower": {
           "type": "array",
           "originalType": "Loan",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+            "$ref": "loan-management-schema-id#/definitions/Loan"
           }
         }
       },
@@ -126,15 +126,15 @@
           "originalType": "String"
         },
         "uinsert": {
-          "$ref": "blue-phoenix-schema-id#/definitions/User"
+          "$ref": "loan-management-schema-id#/definitions/User"
         },
         "borrower1": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+          "$ref": "loan-management-schema-id#/definitions/Borrower"
         },
         "borrower2": {
           "anyOf": [
             {
-              "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+              "$ref": "loan-management-schema-id#/definitions/Borrower"
             },
             {
               "type": "null"
@@ -165,20 +165,20 @@
           "type": "array",
           "originalType": "Transaction",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+            "$ref": "loan-management-schema-id#/definitions/Transaction"
           }
         },
         "terms": {
           "type": "array",
           "originalType": "Term",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Term"
+            "$ref": "loan-management-schema-id#/definitions/Term"
           }
         },
         "balance": {
           "anyOf": [
             {
-              "$ref": "blue-phoenix-schema-id#/definitions/Balance"
+              "$ref": "loan-management-schema-id#/definitions/Balance"
             },
             {
               "type": "null"
@@ -234,14 +234,14 @@
           "originalType": "String"
         },
         "loan": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          "$ref": "loan-management-schema-id#/definitions/Loan"
         },
         "loanId": {
           "type": "string",
           "originalType": "String"
         },
         "uinsert": {
-          "$ref": "blue-phoenix-schema-id#/definitions/User"
+          "$ref": "loan-management-schema-id#/definitions/User"
         },
         "uinsertId": {
           "type": "string",
@@ -253,7 +253,7 @@
           "format": "date-time"
         },
         "concept": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+          "$ref": "loan-management-schema-id#/definitions/Concept"
         },
         "conceptId": {
           "type": "string",
@@ -302,14 +302,14 @@
           "type": "array",
           "originalType": "Transaction",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+            "$ref": "loan-management-schema-id#/definitions/Transaction"
           }
         },
         "paymentAscConcepts": {
           "type": "array",
           "originalType": "TermPaymentAssociatedConcepts",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
+            "$ref": "loan-management-schema-id#/definitions/TermPaymentAssociatedConcepts"
           }
         }
       },
@@ -358,7 +358,7 @@
           "originalType": "Int"
         },
         "uinsert": {
-          "$ref": "blue-phoenix-schema-id#/definitions/User"
+          "$ref": "loan-management-schema-id#/definitions/User"
         },
         "uinsertId": {
           "type": "string",
@@ -370,7 +370,7 @@
           "format": "date-time"
         },
         "loan": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          "$ref": "loan-management-schema-id#/definitions/Loan"
         },
         "loanId": {
           "type": "string",
@@ -380,7 +380,7 @@
           "type": "array",
           "originalType": "TermPaymentAssociatedConcepts",
           "items": {
-            "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
+            "$ref": "loan-management-schema-id#/definitions/TermPaymentAssociatedConcepts"
           }
         }
       },
@@ -409,14 +409,14 @@
           "originalType": "Float"
         },
         "concept": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+          "$ref": "loan-management-schema-id#/definitions/Concept"
         },
         "conceptId": {
           "type": "string",
           "originalType": "String"
         },
         "term": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Term"
+          "$ref": "loan-management-schema-id#/definitions/Term"
         },
         "termId": {
           "type": "string",
@@ -478,7 +478,7 @@
           "format": "date-time"
         },
         "loan": {
-          "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+          "$ref": "loan-management-schema-id#/definitions/Loan"
         },
         "loanId": {
           "type": "string",
@@ -547,28 +547,28 @@
   "type": "object",
   "properties": {
     "user": {
-      "$ref": "blue-phoenix-schema-id#/definitions/User"
+      "$ref": "loan-management-schema-id#/definitions/User"
     },
     "borrower": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Borrower"
+      "$ref": "loan-management-schema-id#/definitions/Borrower"
     },
     "loan": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Loan"
+      "$ref": "loan-management-schema-id#/definitions/Loan"
     },
     "transaction": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Transaction"
+      "$ref": "loan-management-schema-id#/definitions/Transaction"
     },
     "concept": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Concept"
+      "$ref": "loan-management-schema-id#/definitions/Concept"
     },
     "term": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Term"
+      "$ref": "loan-management-schema-id#/definitions/Term"
     },
     "termPaymentAssociatedConcepts": {
-      "$ref": "blue-phoenix-schema-id#/definitions/TermPaymentAssociatedConcepts"
+      "$ref": "loan-management-schema-id#/definitions/TermPaymentAssociatedConcepts"
     },
     "balance": {
-      "$ref": "blue-phoenix-schema-id#/definitions/Balance"
+      "$ref": "loan-management-schema-id#/definitions/Balance"
     }
   }
 }
