@@ -23,7 +23,7 @@ This API is responsible for the following features:
 
 Clone the repository:
 ```bash
-$ git clone https://github.com/{your_username}/loan-management-api.git
+$ git clone https://github.com/fsiatama/loan-management-api.git
 $ cd loan-management-api
 ```
 
